@@ -8,6 +8,7 @@ import { ProductDetailView } from '../../components/ProductDetailView';
 import { ShopAllView } from '../../components/ShopAllView';
 import { ShopTheSet } from '../../components/ShopTheSet';
 import { BRAND_INFO, CATEGORY_STRIP, PRODUCTS } from '../../data/catalog';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { catalogService } from '../../services/catalog.service';
 import { cmsService } from '../../services/cms.service';
 import { useUiStore } from '../../stores/ui.store';
@@ -113,6 +114,16 @@ export function StorefrontApp() {
 
   const bagCount = calculateBagCount(bag);
   const dropProducts = filterDropProducts(products, dropCategory);
+  const {
+    visibleCount: dropVisibleCount,
+    hasMore: dropHasMore,
+    sentinelRef: dropSentinelRef,
+  } = useInfiniteScroll({
+    totalItems: dropProducts.length,
+    batchSize: 4,
+    resetKey: dropCategory,
+  });
+  const visibleDropProducts = dropProducts.slice(0, dropVisibleCount);
 
   const heroHeadline = homepage?.hero?.headline || 'LAGIISM // DROP 01';
   const heroSubheadline =
@@ -221,51 +232,65 @@ export function StorefrontApp() {
 
             <section
               id="drop-collection"
-              className="max-w-[1440px] mx-auto px-4 md:px-8 py-14 md:py-20 scroll-mt-14"
+              className="py-14 md:py-20 scroll-mt-14"
             >
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-black">
-                <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#555555]">
-                    NEW ARRIVALS // {coordinates}
-                  </p>
-                  <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.03em] text-black mt-1">
-                    {dropLabel}
-                  </h2>
-                </div>
+              {/* Sticky Drop 01 Filter Bar */}
+              <div className="sticky top-13 z-30 bg-white/95 backdrop-blur-sm border-b border-black">
+                <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#555555]">
+                      NEW ARRIVALS // {coordinates}
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.03em] text-black mt-1">
+                      {dropLabel}
+                    </h2>
+                  </div>
 
-                <div
-                  role="tablist"
-                  aria-label="Drop 01 category filters"
-                  className="flex flex-wrap items-center gap-1.5"
-                >
-                  {DROP_TABS.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={dropCategory === tab.id}
-                      onClick={() => setDropCategory(tab.id)}
-                      className={`font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-black cursor-pointer transition-colors whitespace-nowrap ${
-                        dropCategory === tab.id
-                          ? 'bg-black text-white'
-                          : 'bg-white text-black hover:bg-[#F4F4F4]'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                  <div
+                    role="tablist"
+                    aria-label="Drop 01 category filters"
+                    className="flex flex-wrap items-center gap-1.5"
+                  >
+                    {DROP_TABS.map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={dropCategory === tab.id}
+                        onClick={() => setDropCategory(tab.id)}
+                        className={`font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-black cursor-pointer transition-colors whitespace-nowrap ${
+                          dropCategory === tab.id
+                            ? 'bg-black text-white'
+                            : 'bg-white text-black hover:bg-[#F4F4F4]'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-                {dropProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onSelectProduct={handleSelectProduct}
-                    onQuickAdd={handleQuickAdd}
-                  />
-                ))}
+              <div className="max-w-[1440px] mx-auto px-4 md:px-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+                  {visibleDropProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onSelectProduct={handleSelectProduct}
+                      onQuickAdd={handleQuickAdd}
+                    />
+                  ))}
+                </div>
+
+                {/* Infinite Scroll Sentinel */}
+                <div ref={dropSentinelRef} className="mt-8 flex justify-center">
+                  {dropHasMore && (
+                    <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#555555] py-2">
+                      SCROLLING TO LOAD MORE ({visibleDropProducts.length} / {dropProducts.length})...
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
 
@@ -324,6 +349,7 @@ export function StorefrontApp() {
 
         {activeView === 'SHOP_ALL' && (
           <ShopAllView
+            products={products}
             selectedCategory={shopAllCategory}
             searchQuery={searchQuery}
             sortOrder={sortOrder}
