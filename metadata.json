@@ -1,0 +1,8 @@
+{
+  "name": "LAGIISM — Clinical Streetwear Archive",
+  "description": "LAGIISM Est. 2026 | La Gi, Bình Thuận & TP.HCM. Drop 01 minimalist technical streetwear storefront.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
