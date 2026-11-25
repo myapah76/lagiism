@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: None
+
+app:
+  security:
+    cookie-secure: true
+    cookie-same-site: None
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: false
