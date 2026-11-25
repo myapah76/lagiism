@@ -8,19 +8,48 @@
       name="description"
       content="LAGIISM Est. 2026 | La Gi, Bình Thuận & TP.HCM. Minimalist technical streetwear archive and Drop 01 collection."
     />
+
+    <!-- 1:1 Square Favicons (Google Search & Apple Touch) -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" href="/favicon-48x48.png" sizes="48x48" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+
+    <!-- Open Graph / Twitter -->
     <meta property="og:title" content="LAGIISM — DROP 01 // LA GI — TP.HCM" />
     <meta
       property="og:description"
       content="LAGIISM Est. 2026 | La Gi, Bình Thuận & TP.HCM. Minimalist technical streetwear archive and Drop 01 collection."
     />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LAGIISM" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "LAGIISM",
+        "description": "Minimalist technical streetwear archive founded in La Gi, Bình Thuận & Ho Chi Minh City.",
+        "foundingDate": "2026",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "La Gi",
+          "addressRegion": "Bình Thuận",
+          "addressCountry": "VN"
+        }
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body class="bg-white text-black antialiased selection:bg-black selection:text-white">
     <div id="root"></div>
