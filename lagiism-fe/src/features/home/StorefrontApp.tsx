@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AboutView } from '../../components/AboutView';
 import { BagDrawer } from '../../components/BagDrawer';
 import { Footer } from '../../components/Footer';
@@ -39,6 +40,47 @@ const DROP_TABS: { id: DropFilterCategory; label: string }[] = [
   { id: 'OUTERWEAR', label: 'OUTERWEAR' },
 ];
 
+const VALID_SHOP_CATEGORIES: ShopAllCategory[] = [
+  'ALL',
+  'TEES',
+  'DENIM',
+  'OUTERWEAR',
+  'ACCESSORIES',
+];
+
+const VALID_DROP_CATEGORIES: DropFilterCategory[] = [
+  'ALL',
+  'TEES',
+  'DENIM',
+  'OUTERWEAR',
+];
+
+type SortOrder = 'FEATURED' | 'PRICE_ASC' | 'PRICE_DESC';
+
+function parseShopCategory(slug?: string): ShopAllCategory {
+  if (!slug) return 'ALL';
+  const upper = slug.toUpperCase() as ShopAllCategory;
+  return VALID_SHOP_CATEGORIES.includes(upper) ? upper : 'ALL';
+}
+
+function parseDropCategory(param: string | null): DropFilterCategory {
+  if (!param) return 'ALL';
+  const upper = param.toUpperCase() as DropFilterCategory;
+  return VALID_DROP_CATEGORIES.includes(upper) ? upper : 'ALL';
+}
+
+function parseSortOrder(param: string | null): SortOrder {
+  if (param === 'price-asc' || param === 'PRICE_ASC') return 'PRICE_ASC';
+  if (param === 'price-desc' || param === 'PRICE_DESC') return 'PRICE_DESC';
+  return 'FEATURED';
+}
+
+function toSortParam(sort: SortOrder): string | null {
+  if (sort === 'PRICE_ASC') return 'price-asc';
+  if (sort === 'PRICE_DESC') return 'price-desc';
+  return null;
+}
+
 function mapProductDto(dto: ProductDto): Product {
   const validCategory = (
     ['TEES', 'DENIM', 'OUTERWEAR', 'ACCESSORIES'].includes(dto.categoryCode)
@@ -78,16 +120,16 @@ function mapProductDto(dto: ProductDto): Product {
 }
 
 export function StorefrontApp() {
-  const [activeView, setActiveView] = useState<ActiveView>('HOME');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { categorySlug, slug: productSlug } = useParams<{
+    categorySlug?: string;
+    slug?: string;
+  }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [homepage, setHomepage] = useState<HomepageAggregateDto | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product>(PRODUCTS[0]);
-  const [dropCategory, setDropCategory] = useState<DropFilterCategory>('ALL');
-  const [shopAllCategory, setShopAllCategory] = useState<ShopAllCategory>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState<'FEATURED' | 'PRICE_ASC' | 'PRICE_DESC'>(
-    'FEATURED'
-  );
   const [bag, setBag] = useState<BagItem[]>([]);
   const { isBagOpen, setBagOpen } = useUiStore();
 
@@ -102,15 +144,36 @@ export function StorefrontApp() {
         setHomepage(cmsRes.value);
       }
       if (prodRes.status === 'fulfilled' && prodRes.value.length > 0) {
-        const mapped = prodRes.value.map(mapProductDto);
-        setProducts(mapped);
-        setSelectedProduct((prev) => mapped.find((p) => p.id === prev.id) || mapped[0]);
+        setProducts(prodRes.value.map(mapProductDto));
       }
     });
     return () => {
       active = false;
     };
   }, []);
+
+  // Derive activeView & filter state directly from URL path + query params
+  const activeView: ActiveView = useMemo(() => {
+    if (location.pathname.startsWith('/shop')) return 'SHOP_ALL';
+    if (location.pathname.startsWith('/product/')) return 'PRODUCT_DETAIL';
+    if (location.pathname === '/about') return 'ABOUT';
+    return 'HOME';
+  }, [location.pathname]);
+
+  const shopAllCategory = parseShopCategory(categorySlug);
+  const dropCategory = parseDropCategory(searchParams.get('drop'));
+  const searchQuery = searchParams.get('q') || '';
+  const sortOrder = parseSortOrder(searchParams.get('sort'));
+
+  const selectedProduct = useMemo(() => {
+    if (productSlug) {
+      return (
+        products.find((p) => p.id.toLowerCase() === productSlug.toLowerCase()) ||
+        products[0]
+      );
+    }
+    return products[0];
+  }, [productSlug, products]);
 
   const bagCount = calculateBagCount(bag);
   const dropProducts = filterDropProducts(products, dropCategory);
@@ -134,23 +197,85 @@ export function StorefrontApp() {
   const dropLabel = homepage?.settings?.drop_label || BRAND_INFO.dropLabel;
   const coordinates = homepage?.settings?.brand_coordinates || BRAND_INFO.coordinates;
 
+  const buildShopUrl = (
+    category: ShopAllCategory,
+    q: string,
+    sort: SortOrder
+  ): string => {
+    const base = category === 'ALL' ? '/shop' : `/shop/${category.toLowerCase()}`;
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('q', q.trim());
+    const sortParam = toSortParam(sort);
+    if (sortParam) params.set('sort', sortParam);
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
+  };
+
   const handleNavigate = (view: ActiveView, anchor?: string) => {
-    setActiveView(view);
-    if (view === 'HOME' && anchor) {
-      window.setTimeout(() => {
-        const el = document.getElementById(anchor);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 40);
-    } else {
+    if (view === 'HOME') {
+      const target = anchor ? `/#${anchor}` : '/';
+      navigate(target);
+      if (anchor) {
+        window.setTimeout(() => {
+          const el = document.getElementById(anchor);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 60);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    if (view === 'SHOP_ALL') {
+      navigate(buildShopUrl(shopAllCategory, searchQuery, sortOrder));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (view === 'ABOUT') {
+      navigate('/about');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (view === 'PRODUCT_DETAIL') {
+      navigate(`/product/${selectedProduct.id}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
+  const handleDropCategoryChange = (cat: DropFilterCategory) => {
+    const next = new URLSearchParams(searchParams);
+    if (cat === 'ALL') {
+      next.delete('drop');
+    } else {
+      next.set('drop', cat.toLowerCase());
+    }
+    setSearchParams(next, { replace: false });
+  };
+
+  const handleShopCategoryChange = (cat: ShopAllCategory) => {
+    navigate(buildShopUrl(cat, searchQuery, sortOrder));
+  };
+
+  const handleSearchChange = (q: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (q) {
+      next.set('q', q);
+    } else {
+      next.delete('q');
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleSortChange = (sort: SortOrder) => {
+    navigate(buildShopUrl(shopAllCategory, searchQuery, sort));
+  };
+
   const handleSelectProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setActiveView('PRODUCT_DETAIL');
+    navigate(`/product/${product.id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -172,8 +297,7 @@ export function StorefrontApp() {
   };
 
   const handleSelectCategoryStrip = (category: ProductCategory) => {
-    setShopAllCategory(category);
-    setActiveView('SHOP_ALL');
+    navigate(`/shop/${category.toLowerCase()}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -185,7 +309,7 @@ export function StorefrontApp() {
         searchQuery={searchQuery}
         onNavigate={handleNavigate}
         onOpenBag={() => setBagOpen(true)}
-        onSearchChange={(q) => setSearchQuery(q)}
+        onSearchChange={handleSearchChange}
         onSelectProduct={handleSelectProduct}
       />
 
@@ -257,7 +381,7 @@ export function StorefrontApp() {
                         type="button"
                         role="tab"
                         aria-selected={dropCategory === tab.id}
-                        onClick={() => setDropCategory(tab.id)}
+                        onClick={() => handleDropCategoryChange(tab.id)}
                         className={`font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-black cursor-pointer transition-colors whitespace-nowrap ${
                           dropCategory === tab.id
                             ? 'bg-black text-white'
@@ -302,8 +426,8 @@ export function StorefrontApp() {
                 <button
                   type="button"
                   onClick={() => {
-                    setShopAllCategory('ALL');
-                    handleNavigate('SHOP_ALL');
+                    navigate('/shop');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className="font-mono text-[11px] font-bold uppercase underline underline-offset-4 hover:opacity-70 cursor-pointer"
                 >
@@ -353,9 +477,9 @@ export function StorefrontApp() {
             selectedCategory={shopAllCategory}
             searchQuery={searchQuery}
             sortOrder={sortOrder}
-            onCategoryChange={setShopAllCategory}
-            onSearchChange={setSearchQuery}
-            onSortChange={setSortOrder}
+            onCategoryChange={handleShopCategoryChange}
+            onSearchChange={handleSearchChange}
+            onSortChange={handleSortChange}
             onSelectProduct={handleSelectProduct}
             onQuickAdd={handleQuickAdd}
           />
@@ -365,7 +489,9 @@ export function StorefrontApp() {
           <ProductDetailView
             product={selectedProduct}
             relatedProducts={products.filter((p) => p.id !== selectedProduct.id)}
-            onBack={() => handleNavigate('SHOP_ALL')}
+            onBack={() =>
+              window.history.length > 1 ? navigate(-1) : navigate('/shop')
+            }
             onAddToBag={handleQuickAdd}
             onSelectProduct={handleSelectProduct}
           />
