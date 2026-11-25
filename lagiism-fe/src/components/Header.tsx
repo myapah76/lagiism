@@ -75,13 +75,6 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => handleNavClick('HOME', 'shop-the-set')}
-            className="text-[11px] font-semibold tracking-[0.06em] uppercase whitespace-nowrap shrink-0 text-[#555555] hover:text-black cursor-pointer transition-colors"
-          >
-            SETS
-          </button>
-          <button
-            type="button"
             onClick={() => handleNavClick('ABOUT')}
             className={`text-[11px] font-semibold tracking-[0.06em] uppercase whitespace-nowrap shrink-0 cursor-pointer transition-colors ${
               activeView === 'ABOUT'
@@ -239,13 +232,6 @@ export const Header: React.FC<HeaderProps> = ({
             className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-[0.06em] hover:bg-[#F4F4F4]"
           >
             SHOP ALL
-          </button>
-          <button
-            type="button"
-            onClick={() => handleNavClick('HOME', 'shop-the-set')}
-            className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-[0.06em] hover:bg-[#F4F4F4]"
-          >
-            SETS
           </button>
           <button
             type="button"
