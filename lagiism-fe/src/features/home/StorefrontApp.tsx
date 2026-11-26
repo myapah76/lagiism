@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -16,6 +16,10 @@ import { HomeHero } from './components/HomeHero';
 import { HomeDropCollection } from './components/HomeDropCollection';
 import { HomeEditorialFilm } from './components/HomeEditorialFilm';
 import { HomeCategoryArchive } from './components/HomeCategoryArchive';
+
+const RunwaySection = lazy(() =>
+  import('../runway/RunwaySection').then((m) => ({ default: m.RunwaySection }))
+);
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 import { BRAND_INFO, CATEGORY_STRIP, PRODUCTS } from '../../data/catalog';
@@ -176,6 +180,7 @@ export function StorefrontApp() {
     if (location.pathname.startsWith('/shop')) return 'SHOP_ALL';
     if (location.pathname.startsWith('/product/')) return 'PRODUCT_DETAIL';
     if (location.pathname === '/about') return 'ABOUT';
+    if (location.pathname === '/runway') return 'RUNWAY';
     return 'HOME';
   }, [location.pathname]);
 
@@ -255,7 +260,13 @@ export function StorefrontApp() {
 
     if (view === 'ABOUT') {
       navigate('/about');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0 });
+      return;
+    }
+
+    if (view === 'RUNWAY') {
+      navigate('/runway');
+      window.scrollTo({ top: 0 });
       return;
     }
 
@@ -467,6 +478,23 @@ export function StorefrontApp() {
         )}
 
         {activeView === 'ABOUT' && <AboutView onNavigate={handleNavigate} />}
+
+        {activeView === 'RUNWAY' && (
+          <Suspense
+            fallback={
+              <div className="min-h-screen bg-[#F4F3EF] flex items-center justify-center font-mono text-xs uppercase tracking-[0.14em] text-[#6E6D68]">
+                LOADING RUNWAY...
+              </div>
+            }
+          >
+            <RunwaySection
+              onOpenProduct={(pid) => {
+                navigate(`/product/${pid}`);
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          </Suspense>
+        )}
       </main>
 
       <Footer onNavigate={handleNavigate} />

@@ -64,6 +64,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             >
               04 // ABOUT STORY
             </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('RUNWAY')}
+              className="min-h-[40px] text-left font-mono text-xs font-bold uppercase text-[#F4F3EF] hover:text-[#9E3E24] transition-colors cursor-pointer"
+            >
+              05 // RUNWAY
+            </button>
           </nav>
         </div>
 

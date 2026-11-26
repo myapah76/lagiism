@@ -36,6 +36,7 @@ export default function App() {
           <Route path="/shop/:categorySlug" element={<StorefrontApp />} />
           <Route path="/product/:slug" element={<StorefrontApp />} />
           <Route path="/about" element={<StorefrontApp />} />
+          <Route path="/runway" element={<StorefrontApp />} />
           <Route path="/login" element={<UserAuthPage initialMode="LOGIN" />} />
           <Route path="/register" element={<UserAuthPage initialMode="REGISTER" />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />

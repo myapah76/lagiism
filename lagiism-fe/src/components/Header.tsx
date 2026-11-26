@@ -82,6 +82,13 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => handleNavClick('RUNWAY')}
+            className={navLinkClass(activeView === 'RUNWAY')}
+          >
+            RUNWAY
+          </button>
+          <button
+            type="button"
             onClick={() => handleNavClick('ABOUT')}
             className={navLinkClass(activeView === 'ABOUT')}
           >
@@ -269,6 +276,13 @@ export const Header: React.FC<HeaderProps> = ({
             className="min-h-[48px] px-4 py-3.5 text-left font-mono text-xs font-bold uppercase tracking-[0.08em] text-[#111111] hover:bg-[#EAE8E1]"
           >
             SHOP ALL
+          </button>
+          <button
+            type="button"
+            onClick={() => handleNavClick('RUNWAY')}
+            className="min-h-[48px] px-4 py-3.5 text-left font-mono text-xs font-bold uppercase tracking-[0.08em] text-[#111111] hover:bg-[#EAE8E1]"
+          >
+            RUNWAY
           </button>
           <button
             type="button"

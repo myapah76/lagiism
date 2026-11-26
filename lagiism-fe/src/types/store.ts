@@ -6,7 +6,7 @@ export type ShopAllCategory = 'ALL' | ProductCategory;
 
 export type SizeOption = 'S' | 'M' | 'L' | 'XL';
 
-export type ActiveView = 'HOME' | 'SHOP_ALL' | 'PRODUCT_DETAIL' | 'ABOUT';
+export type ActiveView = 'HOME' | 'SHOP_ALL' | 'PRODUCT_DETAIL' | 'ABOUT' | 'RUNWAY';
 
 export type SetViewMode = '2D_STUDIO' | '3D_MODEL';
 
