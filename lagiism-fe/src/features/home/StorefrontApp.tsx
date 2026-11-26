@@ -313,7 +313,7 @@ export function StorefrontApp() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-black">
+    <div className="min-h-screen flex flex-col bg-[#F4F3EF] text-[#111111]">
       <Header
         activeView={activeView}
         bagCount={bagCount}

@@ -11,8 +11,8 @@ export const EDITORIAL_PALETTE = {
 
 export interface SceneChapter {
   id: string;
-  triggerId: string;
-  timelineLabel: string;
+  triggerId?: string;
+  timelineLabel?: string;
   index: string;
   title: string;
   location: string;
@@ -21,7 +21,7 @@ export interface SceneChapter {
 
 export const SCENE_CHAPTERS: SceneChapter[] = [
   {
-    id: 'scene-01-gathering',
+    id: 'stage-01-gathering',
     triggerId: 'st-master-story',
     timelineLabel: 'gathering',
     index: '01',
@@ -30,7 +30,7 @@ export const SCENE_CHAPTERS: SceneChapter[] = [
     coordinates: '10°39\'40"N 107°46\'22"E',
   },
   {
-    id: 'scene-02-movement',
+    id: 'stage-02-movement',
     triggerId: 'st-master-story',
     timelineLabel: 'movement',
     index: '02',
@@ -39,7 +39,7 @@ export const SCENE_CHAPTERS: SceneChapter[] = [
     coordinates: '10°46\'37"N 106°42\'03"E',
   },
   {
-    id: 'scene-03-kickflip',
+    id: 'stage-03-kickflip',
     triggerId: 'st-master-story',
     timelineLabel: 'slowMoKickflip',
     index: '03',
@@ -48,12 +48,19 @@ export const SCENE_CHAPTERS: SceneChapter[] = [
     coordinates: '10°46\'37"N 106°42\'03"E',
   },
   {
-    id: 'scene-04-identity',
+    id: 'stage-04-identity',
     triggerId: 'st-master-story',
     timelineLabel: 'identity',
     index: '04',
     title: 'CREW & IDENTITY',
     location: 'LA GI — SAIGON HORIZON',
+    coordinates: '10°39\'40"N 107°46\'22"E',
+  },
+  {
+    id: 'stage-05-archive',
+    index: '05',
+    title: 'ARCHIVE',
+    location: 'DROP 01 // ATELIER',
     coordinates: '10°39\'40"N 107°46\'22"E',
   },
 ];
@@ -64,20 +71,19 @@ export interface KickflipFrame {
   phase: string;
 }
 
-/** 12-frame extreme low-angle under-board kickflip image sequence */
 export const KICKFLIP_SEQUENCE: KickflipFrame[] = [
-  { index: 0, src: '/images/about/kickflip-underboard/frame-01.png', phase: '01 / 12 — STAIR APPROACH' },
-  { index: 1, src: '/images/about/kickflip-underboard/frame-02.png', phase: '02 / 12 — TAIL POP' },
-  { index: 2, src: '/images/about/kickflip-underboard/frame-03.png', phase: '03 / 12 — NOSE FLICK' },
-  { index: 3, src: '/images/about/kickflip-underboard/frame-04.png', phase: '04 / 12 — SLOW-MO FLIP' },
-  { index: 4, src: '/images/about/kickflip-underboard/frame-05.png', phase: '05 / 12 — UNDERSIDE OVERHEAD' },
-  { index: 5, src: '/images/about/kickflip-underboard/frame-06.png', phase: '06 / 12 — APEX ROTATION' },
-  { index: 6, src: '/images/about/kickflip-underboard/frame-07.png', phase: '07 / 12 — TRUCKS & WHEELS' },
-  { index: 7, src: '/images/about/kickflip-underboard/frame-08.png', phase: '08 / 12 — COMPLETING FLIP' },
-  { index: 8, src: '/images/about/kickflip-underboard/frame-09.png', phase: '09 / 12 — GRIP RETURN' },
-  { index: 9, src: '/images/about/kickflip-underboard/frame-10.png', phase: '10 / 12 — MID-AIR CATCH' },
-  { index: 10, src: '/images/about/kickflip-underboard/frame-11.png', phase: '11 / 12 — BOLTS LANDING' },
-  { index: 11, src: '/images/about/kickflip-underboard/frame-12.png', phase: '12 / 12 — STAIR ROLLOUT' },
+  { index: 0, src: '/images/about/kickflip-underboard/frame-01.png', phase: '03 // THE KICKFLIP — APPROACH' },
+  { index: 1, src: '/images/about/kickflip-underboard/frame-02.png', phase: '03 // THE KICKFLIP — TAIL POP' },
+  { index: 2, src: '/images/about/kickflip-underboard/frame-03.png', phase: '03 // THE KICKFLIP — NOSE FLICK' },
+  { index: 3, src: '/images/about/kickflip-underboard/frame-04.png', phase: '03 // THE KICKFLIP — SLOW-MO FLIP' },
+  { index: 4, src: '/images/about/kickflip-underboard/frame-05.png', phase: '03 // THE KICKFLIP — UNDERSIDE OVERHEAD' },
+  { index: 5, src: '/images/about/kickflip-underboard/frame-06.png', phase: '03 // THE KICKFLIP — APEX ROTATION' },
+  { index: 6, src: '/images/about/kickflip-underboard/frame-07.png', phase: '03 // THE KICKFLIP — TRUCKS & WHEELS' },
+  { index: 7, src: '/images/about/kickflip-underboard/frame-08.png', phase: '03 // THE KICKFLIP — COMPLETING FLIP' },
+  { index: 8, src: '/images/about/kickflip-underboard/frame-09.png', phase: '03 // THE KICKFLIP — GRIP RETURN' },
+  { index: 9, src: '/images/about/kickflip-underboard/frame-10.png', phase: '03 // THE KICKFLIP — MID-AIR CATCH' },
+  { index: 10, src: '/images/about/kickflip-underboard/frame-11.png', phase: '03 // THE KICKFLIP — BOLTS LANDING' },
+  { index: 11, src: '/images/about/kickflip-underboard/frame-12.png', phase: '03 // THE KICKFLIP — STAIR ROLLOUT' },
 ];
 
 export interface CrewMemberProfile {
