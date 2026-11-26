@@ -87,6 +87,15 @@ lagiism/
 ## 2. Backend Rules (`lagiism-be/`)
 
 - **Stack & Architecture:** Java 21, Spring Boot 4.1, Maven (`lagiism-be/pom.xml`), layered modular monolith (`controller → service → repository → entity → dto → mapper`).
+- **Package & Folder Cohesion (MANDATORY):**
+  - Every package/folder MUST hold **one cohesive logical concern only**. Never dump unrelated classes flat into a catch-all folder (e.g., do NOT mix Spring Security config, JWT, Redis blacklist, OTP, and OAuth flat inside `auth/security/`).
+  - Keep `auth/` clean at the top level (`bootstrap/`, `controller/`, `dto/`, `entity/`, `mapper/`, `repository/`, `security/`, `service/`) and separate concerns **inside `auth/security/`**:
+    - `auth/security/config/` (`SecurityConfig`, `HybridCsrfTokenRepository`, `AdminUserDetailsService`)
+    - `auth/security/jwt/` (`JwtService`, `JwtAuthenticationFilter`)
+    - `auth/security/blacklist/` (`TokenBlacklistService` + Redis/InMemory implementations)
+    - `auth/security/otp/` (`OtpStore` + Redis Lua/InMemory implementations)
+    - `auth/security/oauth/` (`GoogleTokenVerifierService`)
+  - Apply the same single-concern folder cohesion rule across all backend modules and frontend feature folders.
 - **Unified API Envelope (`ApiResponse<T>`):**
   - Every REST controller MUST return `ApiResponse<T>` with shape `{ success, message, data, timestamp }`.
   - Never expose JPA `@Entity` classes directly in controller request/response signatures; always map via DTOs.
