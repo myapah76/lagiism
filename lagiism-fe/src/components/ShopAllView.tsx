@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { PRODUCTS } from '../data/catalog';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { Product, ShopAllCategory, SizeOption } from '../types/store';
 import { filterAndSortCatalog } from '../utils/storeLogic';
 import { ProductCard } from './ProductCard';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 interface ShopAllViewProps {
   products?: Product[];
@@ -49,15 +54,139 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
   });
 
   const visibleProducts = filtered.slice(0, visibleCount);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardTriggersRef = useRef<ScrollTrigger[]>([]);
+
+  // 1. Editorial header entrance, layout observers, and prefers-reduced-motion cleanup (same as homepage)
+  useGSAP(
+    () => {
+      const root = sectionRef.current;
+      if (!root) return;
+
+      let refreshTimer: number | null = null;
+      let lastHeight = root.offsetHeight;
+
+      const scheduleRefresh = () => {
+        if (refreshTimer !== null) window.clearTimeout(refreshTimer);
+        refreshTimer = window.setTimeout(() => {
+          ScrollTrigger.refresh();
+        }, 120);
+      };
+
+      const checkHeightAndRefresh = () => {
+        const nextHeight = root.offsetHeight;
+        if (Math.abs(nextHeight - lastHeight) > 4) {
+          lastHeight = nextHeight;
+          scheduleRefresh();
+        }
+      };
+
+      const mm = gsap.matchMedia();
+
+      mm.add(
+        '(prefers-reduced-motion: no-preference)',
+        () => {
+          gsap.fromTo(
+            '[data-shop-header]',
+            { y: 16, autoAlpha: 0 },
+            {
+              y: 0,
+              autoAlpha: 1,
+              duration: 0.55,
+              stagger: 0.08,
+              ease: 'power2.out',
+              clearProps: 'transform,opacity,visibility',
+            }
+          );
+
+          return () => {
+            cardTriggersRef.current.forEach((st) => st.kill());
+            cardTriggersRef.current = [];
+            const cards = root.querySelectorAll<HTMLElement>('[data-reveal-card]');
+            if (cards.length > 0) {
+              gsap.set(cards, { clearProps: 'transform,opacity,visibility' });
+              cards.forEach((el) => el.removeAttribute('data-card-animated'));
+            }
+          };
+        },
+        root
+      );
+
+      const ro = new ResizeObserver(checkHeightAndRefresh);
+      ro.observe(root);
+
+      const onMediaLoad = (event: Event) => {
+        if (event.target instanceof HTMLImageElement) {
+          checkHeightAndRefresh();
+        }
+      };
+      root.addEventListener('load', onMediaLoad, true);
+
+      return () => {
+        if (refreshTimer !== null) window.clearTimeout(refreshTimer);
+        ro.disconnect();
+        root.removeEventListener('load', onMediaLoad, true);
+        mm.revert();
+      };
+    },
+    { scope: sectionRef, revertOnUpdate: true }
+  );
+
+  // 2. Dynamically mounted product cards (infinite scroll + category/search/sort filter changes)
+  useEffect(() => {
+    const root = sectionRef.current;
+    if (!root) return;
+
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    cardTriggersRef.current = cardTriggersRef.current.filter((st) => {
+      if (!st.trigger || !st.trigger.isConnected) {
+        st.kill();
+        return false;
+      }
+      return true;
+    });
+
+    const newCards = Array.from(
+      root.querySelectorAll<HTMLElement>('[data-reveal-card]:not([data-card-animated])')
+    );
+    if (newCards.length === 0) return;
+
+    newCards.forEach((el) => el.setAttribute('data-card-animated', 'pending'));
+    gsap.set(newCards, { y: 20, autoAlpha: 0 });
+
+    const created = ScrollTrigger.batch(newCards, {
+      start: 'top 90%',
+      once: true,
+      onEnter: (batch) => {
+        batch.forEach((el) => el.setAttribute('data-card-animated', 'done'));
+        gsap.to(batch, {
+          y: 0,
+          autoAlpha: 1,
+          duration: 0.55,
+          stagger: 0.06,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity,visibility',
+          overwrite: true,
+        });
+      },
+    });
+
+    cardTriggersRef.current.push(...created);
+    ScrollTrigger.refresh();
+  }, [selectedCategory, searchQuery, sortOrder, visibleProducts.length, products.length]);
 
   return (
-    <section className="pt-20 pb-20">
+    <section ref={sectionRef} className="pt-20 pb-20">
       {/* Page Title */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-8 pt-4 pb-5">
-        <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#555555]">
+        <p data-shop-header className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#555555]">
           ARCHIVE INDEX // {filtered.length} ITEMS
         </p>
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-[-0.03em] text-black mt-1">
+        <h1 data-shop-header className="text-3xl md:text-5xl font-black uppercase tracking-[-0.03em] text-black mt-1">
           SHOP ALL — DROP 01
         </h1>
       </div>
@@ -149,12 +278,13 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
               {visibleProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onSelectProduct={onSelectProduct}
-                  onQuickAdd={onQuickAdd}
-                />
+                <div key={product.id} data-reveal-card>
+                  <ProductCard
+                    product={product}
+                    onSelectProduct={onSelectProduct}
+                    onQuickAdd={onQuickAdd}
+                  />
+                </div>
               ))}
             </div>
 

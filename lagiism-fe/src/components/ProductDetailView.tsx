@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Product, SizeOption } from '../types/store';
 import { formatVND } from '../utils/storeLogic';
-import { Turntable3DCanvas } from './Turntable3DCanvas';
 
 interface ProductDetailViewProps {
   product: Product;
@@ -21,7 +20,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 }) => {
   const [selectedSize, setSelectedSize] = useState<SizeOption>('L');
   const [activeMediaIndex, setActiveMediaIndex] = useState<0 | 1>(0);
-  const [inspectMode, setInspectMode] = useState<'2D' | '3D'>('2D');
 
   const images = [product.image, product.secondaryImage];
 
@@ -50,80 +48,44 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-black">
               STUDIO SPECIMEN // {product.specs.sku}
             </span>
-            <div className="inline-flex border border-black">
-              <button
-                type="button"
-                onClick={() => setInspectMode('2D')}
-                className={`font-mono text-[10px] font-bold px-2.5 py-1 uppercase cursor-pointer ${
-                  inspectMode === '2D'
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black'
-                }`}
-              >
-                [ 2D STUDIO ]
-              </button>
-              <button
-                type="button"
-                onClick={() => setInspectMode('3D')}
-                className={`font-mono text-[10px] font-bold px-2.5 py-1 uppercase border-l border-black cursor-pointer ${
-                  inspectMode === '3D'
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black'
-                }`}
-              >
-                [ 3D MODEL ]
-              </button>
-            </div>
           </div>
 
-          {inspectMode === '2D' ? (
-            <>
-              <div className="aspect-[3/4] w-full bg-[#F4F4F4] overflow-hidden flex items-center justify-center">
-                <img
-                  src={images[activeMediaIndex]}
-                  alt={`${product.name} view ${activeMediaIndex + 1}`}
-                  referrerPolicy="no-referrer"
-                  className={`w-full h-full ${
-                    activeMediaIndex === 0 ? 'object-contain' : 'object-cover'
-                  }`}
-                />
-              </div>
-              <div className="grid grid-cols-2 border-t border-[#E0E0E0] bg-white">
-                {images.map((src, idx) => (
-                  <button
-                    key={src + idx}
-                    type="button"
-                    onClick={() => setActiveMediaIndex(idx as 0 | 1)}
-                    className={`flex items-center gap-3 p-3 text-left cursor-pointer ${
-                      idx === 1 ? 'border-l border-[#E0E0E0]' : ''
-                    } ${
-                      activeMediaIndex === idx
-                        ? 'bg-[#F4F4F4] font-bold'
-                        : 'bg-white hover:bg-[#F9F9F9]'
-                    }`}
-                  >
-                    <img
-                      src={src}
-                      alt={`${product.name} thumbnail ${idx + 1}`}
-                      referrerPolicy="no-referrer"
-                      className="w-12 h-14 object-cover bg-[#F4F4F4] border border-black shrink-0"
-                    />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.04em]">
-                      {idx === 0 ? '01 // STUDIO FLAT' : '02 // EDITORIAL FIT'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            <Turntable3DCanvas
-              topProduct={product.setSlot !== 'BOTTOM' ? product : undefined}
-              bottomProduct={product.setSlot === 'BOTTOM' ? product : undefined}
-              inclusionMode={
-                product.setSlot === 'BOTTOM' ? 'BOTTOM_ONLY' : 'TOP_ONLY'
-              }
+          <div className="aspect-[3/4] w-full bg-[#F4F4F4] overflow-hidden flex items-center justify-center">
+            <img
+              src={images[activeMediaIndex]}
+              alt={`${product.name} view ${activeMediaIndex + 1}`}
+              referrerPolicy="no-referrer"
+              className={`w-full h-full ${
+                activeMediaIndex === 0 ? 'object-contain' : 'object-cover'
+              }`}
             />
-          )}
+          </div>
+          <div className="grid grid-cols-2 border-t border-[#E0E0E0] bg-white">
+            {images.map((src, idx) => (
+              <button
+                key={src + idx}
+                type="button"
+                onClick={() => setActiveMediaIndex(idx as 0 | 1)}
+                className={`flex items-center gap-3 p-3 text-left cursor-pointer ${
+                  idx === 1 ? 'border-l border-[#E0E0E0]' : ''
+                } ${
+                  activeMediaIndex === idx
+                    ? 'bg-[#F4F4F4] font-bold'
+                    : 'bg-white hover:bg-[#F9F9F9]'
+                }`}
+              >
+                <img
+                  src={src}
+                  alt={`${product.name} thumbnail ${idx + 1}`}
+                  referrerPolicy="no-referrer"
+                  className="w-12 h-14 object-cover bg-[#F4F4F4] border border-black shrink-0"
+                />
+                <span className="font-mono text-[10px] uppercase tracking-[0.04em]">
+                  {idx === 0 ? '01 // STUDIO FLAT' : '02 // EDITORIAL FIT'}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Right: Contiguous Purchase Module + Garment Manifest */}
