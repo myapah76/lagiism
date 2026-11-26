@@ -30,6 +30,8 @@ public class DatabaseAdminService {
             "users",
             "roles",
             "user_roles",
+            "orders",
+            "order_items",
             "admin_audit_logs",
             "categories",
             "products",
