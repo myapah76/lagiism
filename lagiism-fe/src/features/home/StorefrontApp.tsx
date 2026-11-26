@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AboutView } from '../../components/AboutView';
+import { AccountModal } from '../../components/AccountModal';
+import { AuthModal } from '../../components/AuthModal';
 import { BagDrawer } from '../../components/BagDrawer';
 import { Footer } from '../../components/Footer';
 import { Header } from '../../components/Header';
@@ -12,6 +14,8 @@ import { BRAND_INFO, CATEGORY_STRIP, PRODUCTS } from '../../data/catalog';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { catalogService } from '../../services/catalog.service';
 import { cmsService } from '../../services/cms.service';
+import { getAccessToken } from '../../lib/axios';
+import { useAuthStore } from '../../stores/auth.store';
 import { useUiStore } from '../../stores/ui.store';
 import { HomepageAggregateDto, ProductDto } from '../../types/api';
 import {
@@ -132,6 +136,13 @@ export function StorefrontApp() {
   const [homepage, setHomepage] = useState<HomepageAggregateDto | null>(null);
   const [bag, setBag] = useState<BagItem[]>([]);
   const { isBagOpen, setBagOpen } = useUiStore();
+  const { initialized: authInitialized, checkSession } = useAuthStore();
+
+  useEffect(() => {
+    if (!authInitialized && getAccessToken()) {
+      checkSession();
+    }
+  }, [authInitialized, checkSession]);
 
   useEffect(() => {
     let active = true;
@@ -512,6 +523,9 @@ export function StorefrontApp() {
         onRemoveItem={(key) => setBag((prev) => removeBagItem(prev, key))}
         onClearBag={() => setBag([])}
       />
+
+      <AuthModal />
+      <AccountModal />
     </div>
   );
 }

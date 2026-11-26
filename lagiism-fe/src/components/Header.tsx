@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Menu, Search, X } from 'lucide-react';
+import { LogOut, Menu, Search, User as UserIcon, X } from 'lucide-react';
 import { BRAND_INFO, PRODUCTS } from '../data/catalog';
+import { useAuthStore } from '../stores/auth.store';
+import { useUiStore } from '../stores/ui.store';
 import { ActiveView, Product } from '../types/store';
 import { formatVND } from '../utils/storeLogic';
 
@@ -25,6 +27,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuthStore();
+  const { openAuthModal, openAccountModal } = useUiStore();
 
   const trimmed = searchQuery.trim().toLowerCase();
   const quickMatches = trimmed
@@ -109,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4 md:gap-6 shrink-0">
+        <div className="flex items-center gap-3 md:gap-5 shrink-0">
           <button
             type="button"
             onClick={() => setSearchOpen((prev) => !prev)}
@@ -120,6 +124,40 @@ export const Header: React.FC<HeaderProps> = ({
             <Search size={13} strokeWidth={2} />
             <span className="hidden sm:inline">SEARCH</span>
           </button>
+
+          {user ? (
+            <div className="hidden sm:flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => openAccountModal('PROFILE')}
+                aria-label="Open member profile and order history"
+                className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase text-black hover:underline underline-offset-4 max-w-[140px] truncate cursor-pointer"
+              >
+                <UserIcon size={13} strokeWidth={2} className="shrink-0" />
+                <span className="truncate">{user.fullName}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => logout()}
+                aria-label="Sign out"
+                title="Sign out"
+                className="flex items-center gap-1 text-[11px] font-semibold tracking-[0.06em] uppercase text-[#555555] hover:text-black cursor-pointer"
+              >
+                <LogOut size={13} strokeWidth={2} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('LOGIN')}
+              aria-label="Open sign in modal"
+              className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-black hover:opacity-70 whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <UserIcon size={13} strokeWidth={2} />
+              <span className="hidden sm:inline">SIGN IN</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenBag}
@@ -240,6 +278,41 @@ export const Header: React.FC<HeaderProps> = ({
           >
             ABOUT
           </button>
+          {user ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAccountModal('PROFILE');
+                }}
+                className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-[0.06em] hover:bg-[#F4F4F4]"
+              >
+                MY PROFILE &amp; ORDER HISTORY
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-[0.06em] hover:bg-[#F4F4F4]"
+              >
+                SIGN OUT ({user.fullName})
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openAuthModal('LOGIN');
+              }}
+              className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-[0.06em] hover:bg-[#F4F4F4]"
+            >
+              SIGN IN / REGISTER
+            </button>
+          )}
         </nav>
       )}
     </header>

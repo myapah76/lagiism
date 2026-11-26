@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Minus, Plus, X } from 'lucide-react';
+import { userService } from '../services/user.service';
+import { useAuthStore } from '../stores/auth.store';
 import { BagItem } from '../types/store';
 import { calculateBagSubtotal, formatVND } from '../utils/storeLogic';
 
@@ -20,31 +23,73 @@ export const BagDrawer: React.FC<BagDrawerProps> = ({
   onRemoveItem,
   onClearBag,
 }) => {
+  const { user } = useAuthStore();
   const [checkoutMode, setCheckoutMode] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK'>('COD');
+  const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [confirmedOrderCode, setConfirmedOrderCode] = useState<string | null>(
     null
   );
 
+  // Auto-prefill shipping manifest from signed-in member's default profile
+  useEffect(() => {
+    if (isOpen && user) {
+      setCustomerName((prev) => prev || user.fullName || '');
+      setPhone((prev) => prev || user.phone || '');
+      setAddress((prev) =>
+        prev ||
+        [user.defaultAddress, user.defaultCity].filter(Boolean).join(', ')
+      );
+    }
+  }, [isOpen, user]);
+
   if (!isOpen) return null;
 
   const subtotal = calculateBagSubtotal(items);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || !phone.trim() || !address.trim()) {
       setFormError('REQUIRED: ENTER FULL NAME, PHONE, AND SHIPPING ADDRESS.');
       return;
     }
     setFormError('');
-    const orderNum = `LG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    setConfirmedOrderCode(orderNum);
-    onClearBag();
-    setCheckoutMode(false);
+    setSubmitting(true);
+    try {
+      const payload = {
+        recipientName: customerName.trim(),
+        recipientPhone: phone.trim(),
+        shippingAddress: address.trim(),
+        shippingCity: user?.defaultCity || undefined,
+        paymentMethod,
+        items: items.map((item) => ({
+          productSlug: item.productId,
+          productName: item.name,
+          size: item.size,
+          colorName: item.colorName,
+          unitPriceVnd: item.priceVnd,
+          quantity: item.quantity,
+          imageUrl: item.image,
+        })),
+      };
+      const created = user
+        ? await userService.placeOrder(payload)
+        : await userService.placeGuestOrder(payload);
+      setConfirmedOrderCode(created.orderCode);
+      onClearBag();
+      setCheckoutMode(false);
+    } catch (err) {
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message || 'UNABLE TO PLACE ORDER. PLEASE CHECK YOUR DETAILS.'
+        : 'UNABLE TO PLACE ORDER. PLEASE TRY AGAIN.';
+      setFormError(msg.toUpperCase());
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -156,7 +201,6 @@ export const BagDrawer: React.FC<BagDrawerProps> = ({
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="NGUYEN VAN A"
                   className="w-full border border-black bg-[#F4F4F4] px-3 py-2.5 text-xs uppercase text-black"
                 />
               </div>
@@ -227,9 +271,10 @@ export const BagDrawer: React.FC<BagDrawerProps> = ({
 
               <button
                 type="submit"
-                className="w-full bg-black text-white border border-black py-3.5 text-xs font-bold uppercase tracking-[0.08em] hover:bg-white hover:text-black cursor-pointer transition-colors"
+                disabled={submitting}
+                className="w-full bg-black text-white border border-black py-3.5 text-xs font-bold uppercase tracking-[0.08em] hover:bg-white hover:text-black disabled:opacity-50 cursor-pointer transition-colors"
               >
-                CONFIRM ORDER — {formatVND(subtotal)}
+                {submitting ? 'PLACING ORDER...' : `CONFIRM ORDER — ${formatVND(subtotal)}`}
               </button>
             </form>
           ) : (
