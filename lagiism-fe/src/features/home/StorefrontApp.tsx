@@ -1,15 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { AboutView } from '../../components/AboutView';
 import { AccountModal } from '../../components/AccountModal';
 import { AuthModal } from '../../components/AuthModal';
 import { BagDrawer } from '../../components/BagDrawer';
 import { Footer } from '../../components/Footer';
 import { Header } from '../../components/Header';
-import { ProductCard } from '../../components/ProductCard';
 import { ProductDetailView } from '../../components/ProductDetailView';
 import { ShopAllView } from '../../components/ShopAllView';
 import { ShopTheSet } from '../../components/ShopTheSet';
+import { HomeHero } from './components/HomeHero';
+import { HomeDropCollection } from './components/HomeDropCollection';
+import { HomeEditorialFilm } from './components/HomeEditorialFilm';
+import { HomeCategoryArchive } from './components/HomeCategoryArchive';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 import { BRAND_INFO, CATEGORY_STRIP, PRODUCTS } from '../../data/catalog';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { catalogService } from '../../services/catalog.service';
@@ -312,8 +320,71 @@ export function StorefrontApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const homeRootRef = useRef<HTMLDivElement | null>(null);
+
+  useGSAP(
+    () => {
+      if (activeView !== 'HOME') return;
+      const prefersReduced =
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      // Restrained editorial hero entrance (line-by-line + subtle image sharpen/settle)
+      const introTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      introTl
+        .fromTo('[data-hero-media]', { scale: 1.07, autoAlpha: 0.7 }, { scale: 1.0, autoAlpha: 1, duration: 1.05 }, 0)
+        .fromTo('[data-hero-line]', { yPercent: 105, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.72, stagger: 0.09 }, 0.14)
+        .fromTo('[data-hero-meta]', { y: 12, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, stagger: 0.08 }, 0.28);
+
+      // Restrained scroll-linked parallax on Hero & Editorial Film imagery (zero pinning!)
+      gsap.to('[data-hero-media]', {
+        yPercent: 7,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '[data-home-hero]',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+
+      gsap.fromTo(
+        '[data-film-media]',
+        { yPercent: -4 },
+        {
+          yPercent: 4,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '[data-home-section="editorial-film"]',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        }
+      );
+
+      // Editorial ScrollTrigger.batch reveal for product & category cards
+      gsap.set('[data-reveal-card]', { y: 20, autoAlpha: 0 });
+      ScrollTrigger.batch('[data-reveal-card]', {
+        start: 'top 88%',
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            y: 0,
+            autoAlpha: 1,
+            duration: 0.55,
+            stagger: 0.06,
+            ease: 'power2.out',
+            overwrite: true,
+          }),
+      });
+    },
+    { scope: homeRootRef, dependencies: [activeView], revertOnUpdate: true }
+  );
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F4F3EF] text-[#111111]">
+    <div ref={homeRootRef} className="min-h-screen flex flex-col bg-[#F4F3EF] text-[#111111]">
       <Header
         activeView={activeView}
         bagCount={bagCount}
@@ -328,190 +399,39 @@ export function StorefrontApp() {
       <main className="flex-1 bg-[#F4F3EF]">
         {activeView === 'HOME' && (
           <>
-            <section className="pt-14 border-b border-[#111111]">
-              <div className="relative w-full h-[74svh] min-h-[480px] max-h-[820px] bg-[#0E0E0E] overflow-hidden">
-                <img
-                  src={heroImage}
-                  alt="LAGIISM Drop 01 coastal concrete campaign in La Gi"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E]/85 via-[#0E0E0E]/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 max-w-[1440px] mx-auto px-4 md:px-8 pb-8 md:pb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                  <div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#EAE8E1]">
-                      {heroSubheadline}
-                    </p>
-                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-[-0.04em] leading-[0.92] text-[#F4F3EF] mt-2">
-                      {heroHeadline}
-                    </h1>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigate('HOME', 'drop-collection')}
-                      className="min-h-[44px] bg-[#F4F3EF] text-[#0E0E0E] border border-[#F4F3EF] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.08em] hover:bg-[#9E3E24] hover:border-[#9E3E24] hover:text-[#F4F3EF] transition-colors cursor-pointer whitespace-nowrap"
-                    >
-                      {primaryCta}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleNavigate('ABOUT')}
-                      className="min-h-[44px] bg-[#0E0E0E]/85 text-[#F4F3EF] border border-[#F4F3EF] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.08em] hover:bg-[#F4F3EF] hover:text-[#0E0E0E] transition-colors cursor-pointer whitespace-nowrap"
-                    >
-                      EXPLORE STORY
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <HomeHero
+              heroImage={heroImage}
+              heroHeadline={heroHeadline}
+              heroSubheadline={heroSubheadline}
+              coordinates={coordinates}
+              primaryCta={primaryCta}
+              onNavigate={handleNavigate}
+            />
 
-            <section
-              id="drop-collection"
-              className="py-14 md:py-20 scroll-mt-14"
-            >
-              {/* Sticky Drop 01 Filter Bar */}
-              <div className="sticky top-14 z-30 bg-[#F4F3EF]/95 backdrop-blur-sm border-y border-[#111111]">
-                <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                  <div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#6E6D68]">
-                      NEW ARRIVALS // {coordinates}
-                    </p>
-                    <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.03em] text-[#111111] mt-1">
-                      {dropLabel}
-                    </h2>
-                  </div>
+            <HomeDropCollection
+              dropLabel={dropLabel}
+              coordinates={coordinates}
+              tabs={DROP_TABS}
+              activeCategory={dropCategory}
+              visibleProducts={visibleDropProducts}
+              totalCount={dropProducts.length}
+              hasMore={dropHasMore}
+              sentinelRef={dropSentinelRef}
+              onCategoryChange={handleDropCategoryChange}
+              onSelectProduct={handleSelectProduct}
+              onQuickAdd={handleQuickAdd}
+            />
 
-                  <div
-                    role="tablist"
-                    aria-label="Drop 01 category filters"
-                    className="flex flex-wrap items-center gap-1.5"
-                  >
-                    {DROP_TABS.map((tab) => (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={dropCategory === tab.id}
-                        onClick={() => handleDropCategoryChange(tab.id)}
-                        className={`min-h-[40px] font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-[#111111] cursor-pointer transition-colors whitespace-nowrap ${
-                          dropCategory === tab.id
-                            ? 'bg-[#0E0E0E] text-[#F4F3EF]'
-                            : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <HomeEditorialFilm onNavigate={handleNavigate} />
 
-              <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-                  {visibleDropProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onSelectProduct={handleSelectProduct}
-                      onQuickAdd={handleQuickAdd}
-                    />
-                  ))}
-                </div>
-
-                {/* Infinite Scroll Sentinel */}
-                <div ref={dropSentinelRef} className="mt-8 flex justify-center">
-                  {dropHasMore && (
-                    <div className="font-mono text-[11px] uppercase tracking-[0.08em] text-[#6E6D68] py-2">
-                      SCROLLING TO LOAD MORE ({visibleDropProducts.length} / {dropProducts.length})...
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            {/* Asymmetric Editorial Bridge to About Us Skateboarding Story */}
-            <section className="border-t border-[#111111] bg-[#EAE8E1]">
-              <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-14 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-7 border border-[#111111] bg-[#F4F3EF] overflow-hidden">
-                  <img
-                    src="/images/about/scene01-skatepark-bg.jpg"
-                    alt="Illustrated La Gi coastal concrete skatepark editorial preview"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full aspect-[16/9] object-cover"
-                  />
-                </div>
-                <div className="lg:col-span-5 space-y-4">
-                  <p className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[#9E3E24]">
-                    EDITORIAL FILM // LA GI — SAIGON
-                  </p>
-                  <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.03em] text-[#111111] leading-[0.98]">
-                    THE SKATEBOARDING STORY BEHIND DROP 01
-                  </h2>
-                  <p className="text-sm leading-relaxed text-[#111111]/85 max-w-[46ch]">
-                    Scroll through four illustrated 2.5D scenes—from the concrete seawall gathering in La Gi to a slow-motion stair kickflip in Saigon.
-                  </p>
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigate('ABOUT')}
-                      className="min-h-[44px] bg-[#0E0E0E] text-[#F4F3EF] border border-[#111111] px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.1em] hover:bg-[#9E3E24] transition-colors cursor-pointer"
-                    >
-                      ENTER ABOUT STORY →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="max-w-[1440px] mx-auto px-4 md:px-8 pb-16 md:pb-20 border-t border-[#111111] pt-14">
-              <div className="flex items-end justify-between pb-5 border-b border-[#111111]">
-                <h2 className="text-xl md:text-3xl font-black uppercase tracking-[-0.03em] text-[#111111]">
-                  ARCHIVE BY CATEGORY
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigate('/shop');
-                    window.scrollTo({ top: 0 });
-                  }}
-                  className="font-mono text-[11px] font-bold uppercase underline decoration-[#9E3E24] underline-offset-4 text-[#111111] hover:text-[#9E3E24] cursor-pointer"
-                >
-                  VIEW FULL ARCHIVE
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-                {CATEGORY_STRIP.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleSelectCategoryStrip(cat.id)}
-                    className="group border border-[#D4D2CA] hover:border-[#111111] bg-[#F4F3EF] text-left cursor-pointer transition-colors flex flex-col"
-                  >
-                    <div className="aspect-[4/3] w-full bg-[#EAE8E1] overflow-hidden">
-                      <img
-                        src={cat.image}
-                        alt={cat.title}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      />
-                    </div>
-                    <div className="p-4 border-t border-[#D4D2CA] group-hover:bg-[#0E0E0E] group-hover:text-[#F4F3EF] transition-colors">
-                      <div className="text-sm font-black uppercase tracking-[-0.02em]">
-                        {cat.title}
-                      </div>
-                      <div className="font-mono text-[10px] uppercase tracking-[0.04em] opacity-75 mt-1">
-                        {cat.subtitle}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
+            <HomeCategoryArchive
+              categories={CATEGORY_STRIP}
+              onSelectCategory={handleSelectCategoryStrip}
+              onViewFullArchive={() => {
+                navigate('/shop');
+                window.scrollTo({ top: 0 });
+              }}
+            />
 
             <ShopTheSet
               onAddSetToBag={handleAddSetToBag}
