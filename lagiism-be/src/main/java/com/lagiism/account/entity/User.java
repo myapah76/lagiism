@@ -41,6 +41,15 @@ public class User {
     @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
 
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "default_address", columnDefinition = "TEXT")
+    private String defaultAddress;
+
+    @Column(name = "default_city", length = 120)
+    private String defaultCity;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;

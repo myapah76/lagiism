@@ -31,8 +31,13 @@ public class AccountService {
     private final AccountMapper accountMapper;
 
     @Transactional(readOnly = true)
-    public List<AccountDto> listAll() {
+    public List<AccountDto> listAll(String query) {
+        String q = query != null ? query.trim().toLowerCase() : "";
         return userRepository.findAll().stream()
+                .filter(u -> q.isEmpty()
+                        || (u.getFullName() != null && u.getFullName().toLowerCase().contains(q))
+                        || (u.getPhone() != null && u.getPhone().toLowerCase().contains(q))
+                        || (u.getEmail() != null && u.getEmail().toLowerCase().contains(q)))
                 .map(accountMapper::toAccountDto)
                 .toList();
     }

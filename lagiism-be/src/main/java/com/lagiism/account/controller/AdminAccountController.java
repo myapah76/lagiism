@@ -23,8 +23,8 @@ public class AdminAccountController {
     private final AuditLogService auditLogService;
 
     @GetMapping("/accounts")
-    public ApiResponse<List<AccountDto>> listAccounts() {
-        return ApiResponse.ok(accountService.listAll());
+    public ApiResponse<List<AccountDto>> listAccounts(@RequestParam(required = false) String q) {
+        return ApiResponse.ok(accountService.listAll(q));
     }
 
     @PostMapping("/accounts")
