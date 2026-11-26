@@ -7,12 +7,12 @@ import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 import { ActiveView } from '../../types/store';
 import {
   KICKFLIP_SEQUENCE,
-  SCENE_CHAPTERS,
   SceneChapter,
 } from './data/aboutEditorialData';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { EditorialChrome } from './components/EditorialChrome';
 import { CrewRosterDrawer } from './components/CrewRosterDrawer';
+import { MasterCinematicStage } from './components/MasterCinematicStage';
 import { SceneGathering } from './components/SceneGathering';
 import { SceneMovement } from './components/SceneMovement';
 import { SceneKickflipFinale } from './components/SceneKickflipFinale';
@@ -27,23 +27,21 @@ interface AboutExperienceProps {
 export const AboutExperience: React.FC<AboutExperienceProps> = ({ onNavigate }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const kickflipCanvasRef = useRef<KickflipCanvasHandle | null>(null);
-  const phaseLabelRef = useRef<HTMLSpanElement | null>(null);
+  const telemetryRef = useRef<HTMLSpanElement | null>(null);
 
   const reducedMotion = useReducedMotion();
   const [activeSceneIndex, setActiveSceneIndex] = useState(0);
-  const [manualFrame, setManualFrame] = useState(3);
+  const [manualFrame, setManualFrame] = useState(5);
   const [isCrewSheetOpen, setIsCrewSheetOpen] = useState(false);
 
-  // Sync manual frame scrubber in reduced-motion mode
   const handleSelectManualFrame = useCallback((idx: number) => {
     setManualFrame(idx);
     kickflipCanvasRef.current?.drawFrame(idx);
-    if (phaseLabelRef.current) {
-      phaseLabelRef.current.textContent = KICKFLIP_SEQUENCE[idx].phase;
+    if (telemetryRef.current) {
+      telemetryRef.current.textContent = KICKFLIP_SEQUENCE[idx].phase;
     }
   }, []);
 
-  // Refresh ScrollTrigger once web fonts finish loading so pin spacers stay exact
   useEffect(() => {
     if (typeof document !== 'undefined' && document.fonts?.ready) {
       document.fonts.ready.then(() => {
@@ -52,187 +50,207 @@ export const AboutExperience: React.FC<AboutExperienceProps> = ({ onNavigate }) 
     }
   }, []);
 
-  // Main GSAP + ScrollTrigger storytelling engine (responsive + reduced-motion via matchMedia)
+  // ONE SINGLE CONTINUOUS MASTER GSAP TIMELINE (0% – 100%)
+  // No competing pins, no camera resets between scenes, full reverse-scroll fidelity.
   useGSAP(
     () => {
+      if (reducedMotion) {
+        kickflipCanvasRef.current?.drawFrame(5);
+        return;
+      }
+
       const mm = gsap.matchMedia();
 
       mm.add(
         {
           isDesktop: '(min-width: 1024px)',
           isMobile: '(max-width: 1023px)',
-          reduceMotion: '(prefers-reduced-motion: reduce)',
         },
         (context) => {
-          const { isDesktop, reduceMotion } = context.conditions ?? {};
+          const { isDesktop } = context.conditions ?? {};
 
-          if (reduceMotion) {
-            kickflipCanvasRef.current?.drawFrame(3);
-            return;
-          }
-
-          // =====================================================================
-          // SCENE 01 — THE GATHERING
-          // Tactile close-ups -> protagonist pushes in -> staggered crew reacts
-          // =====================================================================
-          const gatheringTl = gsap.timeline({
-            defaults: { ease: 'none' },
-            scrollTrigger: {
-              id: 'st-gathering',
-              trigger: '[data-scene="gathering"]',
-              start: 'top top',
-              end: isDesktop ? '+=130%' : '+=85%',
-              pin: true,
-              scrub: 0.75,
-              anticipatePin: 1,
-              refreshPriority: 3,
-              onEnter: () => setActiveSceneIndex(0),
-              onEnterBack: () => setActiveSceneIndex(0),
-            },
-          });
-
-          gatheringTl
-            .addLabel('open', 0)
-            .fromTo('[data-gathering-bg]', { scale: 1.0, yPercent: 0 }, { scale: 1.09, yPercent: -2.5, duration: 1 }, 'open')
-            .fromTo('[data-gathering-details]', { yPercent: 0, autoAlpha: 1 }, { yPercent: -18, autoAlpha: 0, duration: 0.42 }, 'open')
-            .fromTo('[data-gathering-fg-ledge]', { xPercent: 8, yPercent: 18 }, { xPercent: -10, yPercent: 0, duration: 1 }, 'open')
-            .addLabel('enter', 0.06)
-            .fromTo(
-              '[data-gathering-protagonist]',
-              { yPercent: 95, xPercent: -10, scale: 1.24, autoAlpha: 0.25 },
-              { yPercent: 2, xPercent: 8, scale: 0.96, autoAlpha: 1, ease: 'power2.out', duration: 0.68 },
-              'enter'
-            )
-            .addLabel('react', 0.44)
-            .to('[data-crew-member="linh"]', { yPercent: -6, rotation: -1.5, ease: 'power1.inOut', duration: 0.4 }, 'react')
-            .to('[data-crew-member="minh"]', { yPercent: -8, rotation: 1.2, ease: 'power1.inOut', duration: 0.4 }, 'react+=0.04')
-            .to('[data-crew-member="tuan"]', { yPercent: -5, xPercent: -3, rotation: -1.8, ease: 'power1.inOut', duration: 0.4 }, 'react+=0.08')
-            .to('[data-crew-member="ha"]', { yPercent: -10, rotation: 2.5, scale: 1.03, ease: 'power1.inOut', duration: 0.4 }, 'react+=0.06');
-
-          // =====================================================================
-          // SCENE 02 — THE MOVEMENT
-          // Horizontal tracking (ease: "none") + 3 independent crew depth layers
-          // =====================================================================
-          const movementTl = gsap.timeline({
-            defaults: { ease: 'none' },
-            scrollTrigger: {
-              id: 'st-movement',
-              trigger: '[data-scene="movement"]',
-              start: 'top top',
-              end: isDesktop ? '+=160%' : '+=105%',
-              pin: true,
-              scrub: 0.8,
-              anticipatePin: 1,
-              refreshPriority: 2,
-              onEnter: () => setActiveSceneIndex(1),
-              onEnterBack: () => setActiveSceneIndex(1),
-            },
-          });
-
-          movementTl
-            .addLabel('track', 0)
-            .fromTo('[data-movement-bg]', { xPercent: 0 }, { xPercent: -22, duration: 1 }, 'track')
-            .fromTo('[data-movement-crew-bg]', { xPercent: -12 }, { xPercent: 10, duration: 1 }, 'track')
-            .fromTo('[data-movement-crew-mid]', { xPercent: -16, yPercent: 1 }, { xPercent: 16, yPercent: -1, duration: 1 }, 'track')
-            .fromTo('[data-movement-crew-fg]', { xPercent: -20, yPercent: 2 }, { xPercent: 22, yPercent: -1.5, duration: 1 }, 'track')
-            .fromTo('[data-movement-fg]', { xPercent: 10 }, { xPercent: -38, duration: 1 }, 'track')
-            .fromTo('[data-movement-copy]', { yPercent: 5, autoAlpha: 0.85 }, { yPercent: 0, autoAlpha: 1, ease: 'power1.out', duration: 0.3 }, 'track');
-
-          // =====================================================================
-          // UNIFIED SCENE 03 & SCENE 04 — THE KICKFLIP -> CREW & IDENTITY REVEAL
-          // Single pinned ScrollTrigger timeline (0–100%) — ZERO cut, ZERO competing pins:
-          //   0.00–0.20  approach        (Normal speed)
-          //   0.20–0.35  cameraDrop      (Rapid downward camera plunge under board)
-          //   0.35–0.60  slowMoKickflip  (Gradual frame advance + negative-space brand copy)
-          //   0.60–0.75  landing         (Normal speed return + level tracking rise)
-          //   0.75–1.00  crewReveal      (Crew rollout + wide pullback + Official Logo)
-          // =====================================================================
           const frameState = { index: 0 };
-          let lastLabelIdx = -1;
+          let lastFrameIdx = -1;
+          let lastChapter = -1;
 
-          const updateKickflipFrame = () => {
-            const idx = Math.max(0, Math.min(KICKFLIP_SEQUENCE.length - 1, Math.round(frameState.index)));
-            kickflipCanvasRef.current?.drawFrame(idx);
-            if (idx !== lastLabelIdx && phaseLabelRef.current) {
-              phaseLabelRef.current.textContent = KICKFLIP_SEQUENCE[idx].phase;
-              lastLabelIdx = idx;
+          const drawCurrentFrame = () => {
+            const idx = Math.max(
+              0,
+              Math.min(KICKFLIP_SEQUENCE.length - 1, Math.round(frameState.index))
+            );
+            if (idx !== lastFrameIdx) {
+              kickflipCanvasRef.current?.drawFrame(idx);
+              lastFrameIdx = idx;
             }
           };
 
-          const finaleTl = gsap.timeline({
+          const setTelemetry = (text: string) => {
+            if (telemetryRef.current && telemetryRef.current.textContent !== text) {
+              telemetryRef.current.textContent = text;
+            }
+          };
+
+          // Initial spatial states (using autoAlpha to prevent off-beat clicks)
+          gsap.set('[data-act-gathering]', { xPercent: 0, scale: 1.0, autoAlpha: 1 });
+          gsap.set('[data-act-movement]', { xPercent: 100, autoAlpha: 0 });
+          gsap.set('[data-act-kickflip]', { yPercent: 0, autoAlpha: 0 });
+          gsap.set('[data-k-bg-wide]', { autoAlpha: 0, scale: 1.28, yPercent: 5 });
+          gsap.set('[data-k-hero-canvas]', { autoAlpha: 0, yPercent: 12, scale: 0.88 });
+          gsap.set('[data-k-rollout]', { autoAlpha: 0, scale: 1.04, yPercent: 18 });
+          gsap.set('[data-k-underboard-copy]', { autoAlpha: 0, yPercent: 16 });
+          gsap.set('[data-k-identity]', { autoAlpha: 0, yPercent: 8 });
+          gsap.set('[data-wipe-pillar]', { xPercent: 450, autoAlpha: 0 });
+          gsap.set('[data-wipe-stairlip]', { yPercent: 120, autoAlpha: 0 });
+          drawCurrentFrame();
+
+          const master = gsap.timeline({
             defaults: { ease: 'none' },
             scrollTrigger: {
-              id: 'st-kickflip-finale',
-              trigger: '[data-scene="kickflip-finale"]',
+              id: 'st-master-story',
+              trigger: '[data-master-stage]',
               start: 'top top',
-              end: isDesktop ? '+=420%' : '+=240%',
+              end: isDesktop ? '+=760%' : '+=440%',
               pin: true,
-              scrub: 0.65,
+              scrub: 0.7,
               anticipatePin: 1,
-              refreshPriority: 1,
               onUpdate: (self) => {
-                setActiveSceneIndex(self.progress >= 0.72 ? 3 : 2);
+                const p = self.progress;
+                const nextChapter = p < 0.21 ? 0 : p < 0.46 ? 1 : p < 0.78 ? 2 : 3;
+                if (nextChapter !== lastChapter) {
+                  lastChapter = nextChapter;
+                  setActiveSceneIndex(nextChapter);
+                }
+
+                if (p < 0.20) {
+                  setTelemetry('01 // THE GATHERING — LA GI SEAWALL');
+                } else if (p < 0.44) {
+                  setTelemetry('02 // THE MOVEMENT — SAIGON TRACKING');
+                } else if (p < 0.78) {
+                  const idx = Math.max(
+                    0,
+                    Math.min(KICKFLIP_SEQUENCE.length - 1, Math.round(frameState.index))
+                  );
+                  setTelemetry(KICKFLIP_SEQUENCE[idx].phase);
+                } else {
+                  setTelemetry('04 // THE IDENTITY — LA GI HORIZON');
+                }
               },
             },
           });
 
-          // Initial visibility state (autoAlpha prevents off-beat clicks)
-          gsap.set('[data-kf-purpose-copy]', { autoAlpha: 0, yPercent: 18 });
-          gsap.set('[data-kf-identity-reveal]', { autoAlpha: 0, yPercent: 8 });
-          gsap.set('[data-kf-rollout]', { autoAlpha: 0, scale: 1.05, yPercent: 18 });
-          gsap.set('[data-kf-bg-wide]', { autoAlpha: 0, scale: 1.28, yPercent: 5 });
-          updateKickflipFrame();
+          // =================================================================
+          // ACT I: THE GATHERING (0.00 – 0.18)
+          // =================================================================
+          master
+            .addLabel('gathering', 0)
+            .to('[data-act-gathering]', { scale: 1.08, duration: 0.16 }, 'gathering')
+            .fromTo(
+              '[data-g-details]',
+              { yPercent: 0, autoAlpha: 1 },
+              { yPercent: -22, autoAlpha: 0, duration: 0.08 },
+              0.01
+            )
+            .fromTo(
+              '[data-g-protagonist]',
+              { yPercent: 92, xPercent: -8, scale: 1.22, autoAlpha: 0.2 },
+              { yPercent: 2, xPercent: 8, scale: 0.96, autoAlpha: 1, ease: 'power2.out', duration: 0.11 },
+              0.01
+            )
+            .to('[data-g-crew="linh"]', { yPercent: -8, rotation: -1.5, duration: 0.08 }, 0.08)
+            .to('[data-g-crew="minh"]', { yPercent: -10, rotation: 1.2, duration: 0.08 }, 0.09)
+            .to('[data-g-crew="tuan"]', { yPercent: -7, xPercent: -3, rotation: -1.8, duration: 0.08 }, 0.10)
+            .to('[data-g-crew="ha"]', { yPercent: -12, rotation: 2.5, scale: 1.04, duration: 0.08 }, 0.09)
+            .to('[data-g-scrollcue]', { autoAlpha: 0, duration: 0.04 }, 0.06)
 
-          // --- PHASE 1: APPROACH (0.00 – 0.20) ---
-          finaleTl
-            .addLabel('approach', 0)
-            .fromTo('[data-kf-bg-park]', { scale: 1.16, xPercent: 3, yPercent: 0 }, { scale: 1.24, xPercent: -1, yPercent: -2, duration: 0.20 }, 'approach')
-            .fromTo('[data-kf-crew-bg]', { xPercent: -14, scale: 0.86, autoAlpha: 0.88 }, { xPercent: -4, scale: 0.92, autoAlpha: 0.95, duration: 0.20 }, 'approach')
-            .fromTo('[data-kf-hero-stage]', { xPercent: -16, yPercent: 6, scale: 0.88 }, { xPercent: -4, yPercent: 2, scale: 0.96, duration: 0.20 }, 'approach')
+            // ===============================================================
+            // TRANSITION A: GATHERING -> MOVEMENT (0.16 – 0.24)
+            // Continuous sideways camera pan + foreground concrete pillar wipe
+            // ===============================================================
+            .to('[data-wipe-pillar]', { autoAlpha: 1, duration: 0.01 }, 0.16)
+            .fromTo('[data-wipe-pillar]', { xPercent: 420 }, { xPercent: -150, duration: 0.08 }, 0.16)
+            .to('[data-wipe-pillar]', { autoAlpha: 0, duration: 0.01 }, 0.24)
+            .to('[data-act-gathering]', { xPercent: -100, autoAlpha: 0, duration: 0.08 }, 0.17)
+            .to('[data-act-movement]', { xPercent: 0, autoAlpha: 1, duration: 0.08 }, 0.17)
 
-            // --- PHASE 2: CAMERA DROP (0.20 – 0.35) ---
-            .addLabel('cameraDrop', 0.20)
-            .to('[data-kf-bg-park]', { scale: 1.54, yPercent: -15, ease: 'power2.inOut', duration: 0.15 }, 'cameraDrop')
-            .to('[data-kf-fg-ledge]', { yPercent: 120, autoAlpha: 0, ease: 'power2.in', duration: 0.14 }, 'cameraDrop')
-            .to('[data-kf-hero-stage]', { xPercent: 0, yPercent: -8, scale: 1.12, ease: 'power2.out', duration: 0.15 }, 'cameraDrop')
-            .to(frameState, { index: 1.4, duration: 0.15, onUpdate: updateKickflipFrame }, 'cameraDrop')
+            // ===============================================================
+            // ACT II: THE MOVEMENT (0.22 – 0.44)
+            // Continuous horizontal tracking (ease: "none") + 3 crew depth planes
+            // ===============================================================
+            .addLabel('movement', 0.24)
+            .fromTo('[data-m-bg]', { xPercent: 0 }, { xPercent: -24, duration: 0.22 }, 0.22)
+            .fromTo('[data-m-crew-bg]', { xPercent: -10 }, { xPercent: 12, duration: 0.22 }, 0.22)
+            .fromTo('[data-m-crew-mid]', { xPercent: -14, yPercent: 1 }, { xPercent: 18, yPercent: -1, duration: 0.22 }, 0.22)
+            .fromTo('[data-m-crew-fg]', { xPercent: -18, yPercent: 2 }, { xPercent: 28, yPercent: -2, scale: 1.06, duration: 0.22 }, 0.22)
+            .fromTo('[data-m-fg]', { xPercent: 10 }, { xPercent: -42, duration: 0.22 }, 0.22)
+            .fromTo('[data-m-copy]', { autoAlpha: 0, yPercent: 10 }, { autoAlpha: 1, yPercent: 0, duration: 0.05 }, 0.24)
+            .to('[data-m-copy]', { autoAlpha: 0, yPercent: -8, duration: 0.04 }, 0.39)
 
-            // --- PHASE 3: SLOW-MOTION KICKFLIP (0.35 – 0.60) ---
-            // Gradual frame progression (1.4 -> 4.0) over 25% of total scroll = slow motion!
-            .addLabel('slowMoKickflip', 0.35)
-            .to('[data-kf-bg-park]', { scale: 1.6, yPercent: -17, duration: 0.25 }, 'slowMoKickflip')
-            .to('[data-kf-hero-stage]', { yPercent: -12, scale: 1.18, duration: 0.25 }, 'slowMoKickflip')
-            .to(frameState, { index: 4.0, duration: 0.25, onUpdate: updateKickflipFrame }, 'slowMoKickflip')
-            // Integrated negative-space typography beneath the rotating board
-            .to('[data-kf-purpose-copy]', { autoAlpha: 1, yPercent: 0, ease: 'power2.out', duration: 0.08 }, 0.39)
-            .to('[data-kf-purpose-copy]', { autoAlpha: 0, yPercent: -10, ease: 'power1.in', duration: 0.06 }, 0.56)
+            // ===============================================================
+            // TRANSITION B: MOVEMENT -> UNDER-BOARD KICKFLIP (0.41 – 0.50)
+            // Protagonist separates; camera plunges downward under the stairs!
+            // ===============================================================
+            .addLabel('cameraDrop', 0.42)
+            .to('[data-wipe-stairlip]', { autoAlpha: 1, yPercent: 0, ease: 'power2.in', duration: 0.05 }, 0.42)
+            .to('[data-act-movement]', { yPercent: -18, scale: 1.18, autoAlpha: 0, duration: 0.06 }, 0.43)
+            .to('[data-act-kickflip]', { autoAlpha: 1, duration: 0.05 }, 0.43)
+            .fromTo(
+              '[data-k-bg-stairs]',
+              { scale: 1.12, yPercent: 6, rotation: -1.8 },
+              { scale: 1.56, yPercent: -16, rotation: 0, ease: 'power2.inOut', duration: 0.09 },
+              0.43
+            )
+            .to('[data-wipe-stairlip]', { yPercent: 130, autoAlpha: 0, ease: 'power2.out', duration: 0.05 }, 0.47)
+            .fromTo(
+              '[data-k-crew-bg]',
+              { xPercent: -12, scale: 0.85, autoAlpha: 0.85 },
+              { xPercent: -2, scale: 0.92, autoAlpha: 0.95, duration: 0.08 },
+              0.44
+            )
+            .to('[data-k-hero-canvas]', { autoAlpha: 1, yPercent: -6, scale: 1.06, duration: 0.06 }, 0.45)
+            .to(frameState, { index: 2, duration: 0.06, onUpdate: drawCurrentFrame }, 0.45)
 
-            // --- PHASE 4: LANDING & TRACKING RISE (0.60 – 0.75) ---
-            .addLabel('landing', 0.60)
-            .to(frameState, { index: 5, duration: 0.11, onUpdate: updateKickflipFrame }, 'landing')
-            .to('[data-kf-hero-stage]', { xPercent: 8, yPercent: 6, scale: 0.94, ease: 'power2.inOut', duration: 0.12 }, 'landing')
-            .to('[data-kf-bg-park]', { scale: 1.24, yPercent: -4, xPercent: -6, ease: 'power1.inOut', duration: 0.15 }, 'landing')
-            .to('[data-kf-crew-bg]', { xPercent: 8, yPercent: 8, scale: 0.98, duration: 0.15 }, 'landing')
-            // Seamless handoff from kickflip landing into rollout cutout
-            .to('[data-kf-hero-stage]', { autoAlpha: 0, duration: 0.06 }, 0.70)
-            .to('[data-kf-rollout]', { autoAlpha: 1, duration: 0.06 }, 0.70)
+            // ===============================================================
+            // ACT III: UNDER-BOARD SLOW-MOTION KICKFLIP (0.51 – 0.70)
+            // Gradual frame advancement (frames 2 -> 8) = true slow motion!
+            // ===============================================================
+            .addLabel('slowMoKickflip', 0.51)
+            .to('[data-k-bg-stairs]', { scale: 1.62, yPercent: -18, duration: 0.19 }, 'slowMoKickflip')
+            .to('[data-k-hero-canvas]', { yPercent: -10, scale: 1.14, duration: 0.19 }, 'slowMoKickflip')
+            .to(frameState, { index: 8, duration: 0.19, onUpdate: drawCurrentFrame }, 'slowMoKickflip')
+            // Integrated negative-space brand typography beneath the overhead board
+            .to('[data-k-underboard-copy]', { autoAlpha: 1, yPercent: 0, ease: 'power2.out', duration: 0.05 }, 0.53)
+            .to('[data-k-underboard-copy]', { autoAlpha: 0, yPercent: -8, ease: 'power1.in', duration: 0.04 }, 0.67)
 
-            // --- PHASE 5: CREW CONTINUATION, WIDE PULLBACK & OFFICIAL LOGO REVEAL (0.75 – 1.00) ---
-            .addLabel('crewReveal', 0.75)
-            .to('[data-kf-bg-park]', { autoAlpha: 0, scale: 1.05, duration: 0.12 }, 'crewReveal')
-            .to('[data-kf-bg-wide]', { autoAlpha: 1, scale: 1.0, yPercent: 0, ease: 'power1.out', duration: 0.22 }, 'crewReveal')
-            .to('[data-kf-crew-bg]', { xPercent: 18, yPercent: 2, scale: 0.58, autoAlpha: 0.75, ease: 'power1.inOut', duration: 0.22 }, 'crewReveal')
-            .to('[data-kf-rollout]', { scale: 0.38, yPercent: -16, autoAlpha: 0.85, ease: 'power1.inOut', duration: 0.22 }, 'crewReveal')
-            .to('[data-kf-identity-reveal]', { autoAlpha: 1, yPercent: 0, ease: 'power2.out', duration: 0.14 }, 0.84);
+            // ===============================================================
+            // TRANSITION C: LANDING -> CREW CONTINUATION (0.70 – 0.80)
+            // Normal speed return (frames 8 -> 11), camera rises to track rollout
+            // ===============================================================
+            .addLabel('landing', 0.70)
+            .to(frameState, { index: 11, duration: 0.07, onUpdate: drawCurrentFrame }, 'landing')
+            .to('[data-k-hero-canvas]', { xPercent: 8, yPercent: 8, scale: 0.92, ease: 'power2.inOut', duration: 0.08 }, 'landing')
+            .to('[data-k-bg-stairs]', { scale: 1.24, yPercent: -4, xPercent: -5, ease: 'power1.inOut', duration: 0.10 }, 'landing')
+            .to('[data-k-crew-bg]', { xPercent: 10, yPercent: 6, scale: 0.98, duration: 0.10 }, 'landing')
+            .to('[data-k-hero-canvas]', { autoAlpha: 0, duration: 0.04 }, 0.76)
+            .to('[data-k-rollout]', { autoAlpha: 1, duration: 0.04 }, 0.76)
+
+            // ===============================================================
+            // TRANSITION D: WIDE PULLBACK -> EARNED OFFICIAL LAGIISM IDENTITY (0.80 – 1.00)
+            // ===============================================================
+            .addLabel('identity', 0.80)
+            .to('[data-k-bg-stairs]', { autoAlpha: 0, scale: 1.05, duration: 0.09 }, 'identity')
+            .to('[data-k-bg-wide]', { autoAlpha: 1, scale: 1.0, yPercent: 0, ease: 'power1.out', duration: 0.18 }, 'identity')
+            .to('[data-k-crew-bg]', { xPercent: 20, yPercent: 2, scale: 0.54, autoAlpha: 0.72, ease: 'power1.inOut', duration: 0.18 }, 'identity')
+            .to('[data-k-rollout]', { scale: 0.36, yPercent: -16, autoAlpha: 0.85, ease: 'power1.inOut', duration: 0.18 }, 'identity')
+            .to('[data-k-identity]', { autoAlpha: 1, yPercent: 0, ease: 'power2.out', duration: 0.12 }, 0.87);
         }
       );
 
       return () => mm.revert();
     },
-    { scope: containerRef }
+    { scope: containerRef, dependencies: [reducedMotion] }
   );
 
-  // Navigate cleanly to exact pinned ScrollTrigger start or timeline label via ScrollToPlugin
+  // Smoothly jump to exact master-timeline label via ScrollToPlugin
   const handleSelectChapter = useCallback(
     (chapter: SceneChapter) => {
       if (reducedMotion) {
@@ -242,24 +260,17 @@ export const AboutExperience: React.FC<AboutExperienceProps> = ({ onNavigate }) 
       }
 
       const st = ScrollTrigger.getById(chapter.triggerId);
-      if (st) {
-        const targetY =
-          chapter.timelineLabel && typeof st.labelToScroll === 'function'
-            ? st.labelToScroll(chapter.timelineLabel)
-            : st.start;
-
+      if (st && typeof st.labelToScroll === 'function') {
+        const targetY = st.labelToScroll(chapter.timelineLabel);
         if (typeof targetY === 'number' && !Number.isNaN(targetY)) {
           gsap.to(window, {
             scrollTo: { y: targetY, autoKill: true },
-            duration: 0.9,
+            duration: 0.95,
             ease: 'power2.inOut',
           });
           return;
         }
       }
-
-      const fallbackEl = document.getElementById(chapter.id);
-      fallbackEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
     [reducedMotion]
   );
@@ -282,19 +293,28 @@ export const AboutExperience: React.FC<AboutExperienceProps> = ({ onNavigate }) 
             reducedMotion={reducedMotion}
           />
 
-          <SceneGathering reducedMotion={reducedMotion} />
-
-          <SceneMovement reducedMotion={reducedMotion} />
-
-          <SceneKickflipFinale
-            kickflipCanvasRef={kickflipCanvasRef}
-            phaseLabelRef={phaseLabelRef}
-            reducedMotion={reducedMotion}
-            manualFrame={manualFrame}
-            onSelectManualFrame={handleSelectManualFrame}
-            onExploreShop={handleExploreShop}
-            onOpenCrewSheet={() => setIsCrewSheetOpen(true)}
-          />
+          {reducedMotion ? (
+            <>
+              <SceneGathering reducedMotion />
+              <SceneMovement reducedMotion />
+              <SceneKickflipFinale
+                kickflipCanvasRef={kickflipCanvasRef}
+                phaseLabelRef={telemetryRef}
+                reducedMotion
+                manualFrame={manualFrame}
+                onSelectManualFrame={handleSelectManualFrame}
+                onExploreShop={handleExploreShop}
+                onOpenCrewSheet={() => setIsCrewSheetOpen(true)}
+              />
+            </>
+          ) : (
+            <MasterCinematicStage
+              kickflipCanvasRef={kickflipCanvasRef}
+              telemetryRef={telemetryRef}
+              onExploreShop={handleExploreShop}
+              onOpenCrewSheet={() => setIsCrewSheetOpen(true)}
+            />
+          )}
 
           <CrewRosterDrawer
             isOpen={isCrewSheetOpen}
