@@ -13,6 +13,69 @@ export interface AuthUser {
   roles?: string[];
   authProvider?: 'LOCAL' | 'GOOGLE' | string;
   avatarUrl?: string;
+  phone?: string;
+  defaultAddress?: string;
+  defaultCity?: string;
+}
+
+export interface UpdateProfileRequest {
+  fullName: string;
+  phone?: string;
+  defaultAddress?: string;
+  defaultCity?: string;
+}
+
+export interface OrderItemDto {
+  id: number;
+  productSlug: string;
+  productName: string;
+  size: string;
+  colorName?: string;
+  unitPriceVnd: number;
+  quantity: number;
+  imageUrl?: string;
+}
+
+export interface OrderDto {
+  id: number;
+  orderCode: string;
+  userId?: number | null;
+  userEmail?: string | null;
+  status: string;
+  orderSource: string;
+  paymentMethod: string;
+  totalVnd: number;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  shippingCity?: string;
+  note?: string;
+  items: OrderItemDto[];
+  createdAt: string;
+}
+
+export interface CreateOrderRequest {
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+  shippingCity?: string;
+  paymentMethod?: string;
+  note?: string;
+  items: {
+    productSlug: string;
+    productName: string;
+    size: string;
+    colorName?: string;
+    unitPriceVnd: number;
+    quantity: number;
+    imageUrl?: string;
+  }[];
+}
+
+export interface AdminCreateOrderRequest extends CreateOrderRequest {
+  userId?: number | null;
+  orderSource: string;
+  status?: string;
 }
 
 export interface AuthTokenResponse {
@@ -110,6 +173,9 @@ export interface AccountDto {
   id: number;
   email: string;
   fullName: string;
+  phone?: string;
+  defaultAddress?: string;
+  defaultCity?: string;
   role: string;
   roles?: string[];
   authProvider?: string;

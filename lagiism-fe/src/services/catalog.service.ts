@@ -37,6 +37,10 @@ export const catalogService = {
     return apiPost<CategoryDto>(API_ENDPOINTS.ADMIN.CATEGORIES, payload);
   },
 
+  updateCategory(id: number, payload: Omit<CategoryDto, 'id'>): Promise<CategoryDto> {
+    return apiPut<CategoryDto>(`${API_ENDPOINTS.ADMIN.CATEGORIES}/${id}`, payload);
+  },
+
   deleteCategory(id: number): Promise<void> {
     return apiDelete(`${API_ENDPOINTS.ADMIN.CATEGORIES}/${id}`);
   },

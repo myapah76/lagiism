@@ -25,6 +25,11 @@ export const API_ENDPOINTS = {
     HOMEPAGE: '/public/homepage',
     PRODUCTS: '/public/catalog/products',
     CATEGORIES: '/public/catalog/categories',
+    ORDERS: '/public/orders',
+  },
+  USER: {
+    PROFILE: '/user/profile',
+    ORDERS: '/user/orders',
   },
   ADMIN: {
     CMS_HOMEPAGE: '/admin/cms/homepage',
@@ -35,6 +40,7 @@ export const API_ENDPOINTS = {
     PRODUCTS: '/admin/catalog/products',
     CATEGORIES: '/admin/catalog/categories',
     ACCOUNTS: '/admin/accounts',
+    ORDERS: '/admin/orders',
     AUDIT_LOGS: '/admin/audit-logs',
     SMTP: '/admin/smtp',
     MEDIA_UPLOAD: '/admin/media/upload',
