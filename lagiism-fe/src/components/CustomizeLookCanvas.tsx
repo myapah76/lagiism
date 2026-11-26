@@ -42,46 +42,46 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
   return (
     <div
       data-testid="customize-look-section"
-      className="mt-10 pt-8 border-t border-[#E0E0E0]"
+      className="mt-14 pt-10 border-t border-[#111111]"
     >
       {/* Section Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5">
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden="true"
-            className="w-2 h-2 bg-black inline-block shrink-0"
+            className="w-2 h-2 bg-[#9E3E24] inline-block shrink-0"
           />
-          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.06em] text-black">
+          <h3 className="font-mono text-xs font-bold uppercase tracking-[0.08em] text-[#111111]">
             CUSTOMIZE LOOK // SELECT TOP, BOTTOM, OR BOTH
           </h3>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 md:gap-4 font-mono text-[10px] uppercase tracking-[0.05em]">
-          <span className="font-mono-tabular text-[#555555]">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4 font-mono text-[10px] uppercase tracking-[0.06em]">
+          <span className="font-mono-tabular text-[#6E6D68]">
             [ X: {coords.x} // Y: {coords.y} ]
           </span>
-          <span className="text-[#555555]">
+          <span className="text-[#6E6D68]">
             CANVAS // FREEFORM RIGGING ENGINE
           </span>
-          <span className="border border-black bg-[#F4F4F4] px-2.5 py-1 font-bold text-black whitespace-nowrap">
+          <span className="border border-[#111111] bg-[#EAE8E1] px-2.5 py-1 font-bold text-[#111111] whitespace-nowrap">
             {CUSTOMIZE_ARTIFACTS.length} ARTIFACTS LOADED
           </span>
         </div>
       </div>
 
-      {/* Drafting-Grid Interactive Canvas */}
+      {/* Editorial Drafting-Grid Interactive Studio Canvas */}
       <div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         data-testid="customize-look-grid"
-        className="border border-[#E0E0E0] p-5 sm:p-8 lg:p-10 bg-[#FAFAFA]"
+        className="border border-[#111111] p-5 sm:p-8 lg:p-10 bg-[#EAE8E1]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, #EBEBEB 1px, transparent 1px), linear-gradient(to bottom, #EBEBEB 1px, transparent 1px)',
+            'linear-gradient(to right, rgba(17,17,17,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(17,17,17,0.08) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
         }}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7 items-start">
           {CUSTOMIZE_ARTIFACTS.map((artifact) => {
             const isSelected =
               artifact.category === 'top'
@@ -98,16 +98,16 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
                 aria-pressed={isSelected}
                 onClick={() => onToggleArtifact(artifact)}
                 style={{ transform: `rotate(${artifact.tiltDeg}deg)` }}
-                className={`group relative w-full bg-white p-3.5 text-left cursor-pointer transition-transform duration-150 hover:rotate-0 focus-visible:outline-2 focus-visible:outline-black ${
+                className={`group relative w-full bg-[#F4F3EF] p-3.5 text-left cursor-pointer transition-transform duration-150 hover:rotate-0 ${
                   isSelected
-                    ? 'border-2 border-black'
-                    : 'border border-[#E0E0E0] hover:border-black'
+                    ? 'border-2 border-[#111111]'
+                    : 'border border-[#D4D2CA] hover:border-[#111111]'
                 }`}
               >
-                {/* Optional Corner Spec Tag */}
+                {/* Optional Corner Spec Tag (Strict LAGIISM Palette) */}
                 {tag && (
                   <span
-                    className={`absolute z-10 font-mono text-[9px] font-bold uppercase tracking-[0.05em] px-1.5 py-0.5 leading-none ${
+                    className={`absolute z-10 font-mono text-[9px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 leading-none ${
                       tag.position === 'top-left'
                         ? '-top-2 left-2.5'
                         : tag.position === 'top-right'
@@ -115,28 +115,30 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
                           : '-bottom-2 right-2.5'
                     } ${
                       tag.variant === 'acid'
-                        ? 'bg-[#E6F800] text-black border border-black'
+                        ? 'bg-[#9E3E24] text-[#F4F3EF] border border-[#111111]'
                         : tag.variant === 'dark'
-                          ? 'bg-black text-white border border-black'
-                          : 'bg-[#F4F4F4] text-[#555555] border border-[#CCCCCC]'
+                          ? 'bg-[#1D2B44] text-[#F4F3EF] border border-[#111111]'
+                          : 'bg-[#EAE8E1] text-[#6E6D68] border border-[#D4D2CA]'
                     }`}
                   >
                     {tag.label}
                   </span>
                 )}
 
-                {/* Solid Black ACTIVE SELECTED Badge in Top-Right */}
+                {/* Solid Asphalt ACTIVE / SELECTED Badge */}
                 {isSelected && (
-                  <span className="absolute top-2 right-2 z-10 bg-black text-white font-mono text-[9px] font-bold uppercase tracking-[0.06em] px-2 py-1 leading-none">
-                    ACTIVE SELECTED
+                  <span className="absolute top-2 right-2 z-10 bg-[#0E0E0E] text-[#F4F3EF] font-mono text-[9px] font-bold uppercase tracking-[0.06em] px-2 py-1 leading-none">
+                    ACTIVE / SELECTED
                   </span>
                 )}
 
-                {/* Polaroid Studio Frame */}
-                <div className="w-full aspect-[4/3] bg-[#F4F4F4] flex items-center justify-center overflow-hidden p-3">
+                {/* Studio Garment Frame */}
+                <div className="w-full aspect-[4/3] bg-[#EAE8E1] flex items-center justify-center overflow-hidden p-3">
                   <img
                     src={artifact.image}
                     alt={artifact.name}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
                   />
@@ -144,13 +146,13 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
 
                 {/* Metadata Footer */}
                 <div className="pt-3 pb-1">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.05em] text-[#666666]">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.06em] text-[#6E6D68]">
                     {artifact.subLabel}
                   </div>
-                  <div className="text-xs font-black uppercase tracking-[-0.02em] text-black mt-0.5 truncate">
+                  <div className="text-xs font-black uppercase tracking-[-0.02em] text-[#111111] mt-0.5 truncate">
                     {artifact.name}
                   </div>
-                  <div className="font-mono-tabular text-[11px] font-bold text-black mt-1">
+                  <div className="font-mono-tabular text-[11px] font-bold text-[#111111] mt-1">
                     {formatVND(artifact.priceVnd)}
                   </div>
                 </div>
@@ -160,10 +162,10 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
         </div>
       </div>
 
-      {/* Bottom Canvas Footer Bar */}
-      <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.05em] text-[#555555]">
+      {/* Bottom Technical Metadata Bar */}
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[#6E6D68]">
         <span>[ LAT: 10.681° N // LONG: 107.771° E — LA GI HARBOR ]</span>
-        <span>TAP CARD TO BIND / UNBIND FROM 3D TURNTABLE VIEWPORT</span>
+        <span>TAP CARD TO BIND / UNBIND FROM STUDIO VIEWPORT</span>
       </div>
     </div>
   );

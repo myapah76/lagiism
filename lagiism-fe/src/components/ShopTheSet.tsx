@@ -33,9 +33,9 @@ interface ShopTheSetProps {
 const SIZES: SizeOption[] = ['S', 'M', 'L', 'XL'];
 
 const SET_PRESET_PAIRINGS: { topId: string; bottomId: string }[] = [
-  { topId: 'cust-top-01', bottomId: 'cust-bot-01' }, // CRACK-INK TEE + HULL-SEAM INDIGO DENIM
-  { topId: 'cust-top-02', bottomId: 'cust-bot-02' }, // HULL WORK JACKET + BLEACHED JEANS
-  { topId: 'cust-top-03', bottomId: 'cust-bot-03' }, // RIGGING LONGSLEEVE + PATCHWORK PANT
+  { topId: 'cust-top-01', bottomId: 'cust-bot-01' },
+  { topId: 'cust-top-02', bottomId: 'cust-bot-02' },
+  { topId: 'cust-top-03', bottomId: 'cust-bot-03' },
 ];
 
 export const ShopTheSet: React.FC<ShopTheSetProps> = ({
@@ -153,33 +153,33 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
   return (
     <section
       id="shop-the-set"
-      className="max-w-[1440px] mx-auto px-4 md:px-8 py-14 md:py-20 border-t border-black scroll-mt-14"
+      data-home-section="kit-builder"
+      className="max-w-[1440px] mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-[#111111] scroll-mt-14 bg-[#F4F3EF]"
     >
-      {/* Section Header with [ 2D STUDIO ] / [ 3D MODEL ] Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-black">
+      {/* Section Header with Honest [ 2D STUDIO ] / [ 3D SILHOUETTE ] Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#111111]">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[#555555]">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#9E3E24] font-bold">
             MODULAR KIT BUILDER // DROP 01
           </p>
-          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.03em] text-black mt-1">
+          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-[-0.035em] text-[#111111] mt-1">
             SHOP THE SET
           </h2>
         </div>
 
-        {/* [ 2D STUDIO ] / [ 3D MODEL ] Segmented Toggle */}
         <div
           role="group"
           aria-label="Set viewport mode"
-          className="inline-flex border border-black self-start sm:self-auto"
+          className="inline-flex border border-[#111111] self-start sm:self-auto"
         >
           <button
             type="button"
             onClick={() => setViewMode('2D_STUDIO')}
             aria-pressed={viewMode === '2D_STUDIO'}
-            className={`font-mono text-[11px] font-bold px-3.5 py-2 uppercase tracking-[0.04em] cursor-pointer whitespace-nowrap transition-colors ${
+            className={`min-h-[40px] font-mono text-[11px] font-bold px-3.5 py-2 uppercase tracking-[0.06em] cursor-pointer whitespace-nowrap transition-colors ${
               viewMode === '2D_STUDIO'
-                ? 'bg-black text-white'
-                : 'bg-white text-black hover:bg-[#F4F4F4]'
+                ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
             }`}
           >
             [ 2D STUDIO ]
@@ -188,28 +188,28 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
             type="button"
             onClick={() => setViewMode('3D_MODEL')}
             aria-pressed={viewMode === '3D_MODEL'}
-            className={`font-mono text-[11px] font-bold px-3.5 py-2 uppercase tracking-[0.04em] border-l border-black cursor-pointer whitespace-nowrap transition-colors ${
+            className={`min-h-[40px] font-mono text-[11px] font-bold px-3.5 py-2 uppercase tracking-[0.06em] border-l border-[#111111] cursor-pointer whitespace-nowrap transition-colors ${
               viewMode === '3D_MODEL'
-                ? 'bg-black text-white'
-                : 'bg-white text-black hover:bg-[#F4F4F4]'
+                ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
             }`}
           >
-            [ 3D MODEL ]
+            [ 3D SILHOUETTE ]
           </button>
         </div>
       </div>
 
       {/* Main Split Builder Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 border-x border-b border-black">
-        {/* Left Viewport: 2D Studio or 3D Model Canvas */}
-        <div className="lg:col-span-7 bg-[#F4F4F4] border-b lg:border-b-0 lg:border-r border-black flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-12 border-x border-b border-[#111111]">
+        {/* Left Viewport: 2D Studio or 3D Silhouette Turntable */}
+        <div className="lg:col-span-7 bg-[#EAE8E1] border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col">
           {viewMode === '2D_STUDIO' ? (
             <div className="flex-1 flex flex-col justify-between">
-              <div className="px-4 py-3 border-b border-[#E0E0E0] bg-white flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-black">
+              <div className="px-4 py-3 border-b border-[#D4D2CA] bg-[#F4F3EF] flex items-center justify-between gap-2">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#111111]">
                   {activePreset.code} // {activePreset.title}
                 </span>
-                <span className="font-mono text-[10px] uppercase text-[#555555]">
+                <span className="font-mono text-[10px] uppercase text-[#6E6D68]">
                   {inclusionMode === 'BOTH'
                     ? 'FULL 2-PIECE UNIFORM'
                     : inclusionMode === 'TOP_ONLY'
@@ -220,30 +220,32 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 flex-1 divide-y sm:divide-y-0 sm:divide-x divide-[#E0E0E0]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 flex-1 divide-y sm:divide-y-0 sm:divide-x divide-[#D4D2CA]">
                 {/* Top Preview Slot */}
                 <div
-                  className={`p-6 flex flex-col items-center justify-center transition-opacity ${
+                  className={`p-6 flex flex-col items-center justify-center transition-opacity duration-200 ${
                     !activeTopId ? 'opacity-25 grayscale' : 'opacity-100'
                   }`}
                 >
                   <button
                     type="button"
                     onClick={() => onSelectProduct(displayTop)}
-                    className="w-full aspect-[3/4] max-w-[260px] bg-[#F4F4F4] overflow-hidden cursor-pointer"
+                    className="w-full aspect-[3/4] max-w-[260px] bg-[#F4F3EF] border border-[#D4D2CA] hover:border-[#111111] overflow-hidden cursor-pointer transition-colors"
                   >
                     <img
                       src={displayTop.image}
                       alt={displayTop.name}
+                      loading="lazy"
+                      decoding="async"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
                   </button>
                   <div className="mt-3 text-center">
-                    <div className="text-[11px] font-bold uppercase tracking-[-0.02em]">
+                    <div className="text-[11px] font-bold uppercase tracking-[-0.02em] text-[#111111]">
                       {displayTop.name}
                     </div>
-                    <div className="font-mono-tabular text-[11px] text-[#444444]">
+                    <div className="font-mono-tabular text-[11px] text-[#6E6D68]">
                       {formatVND(displayTop.priceVnd)}
                     </div>
                   </div>
@@ -251,27 +253,29 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
 
                 {/* Bottom Preview Slot */}
                 <div
-                  className={`p-6 flex flex-col items-center justify-center transition-opacity ${
+                  className={`p-6 flex flex-col items-center justify-center transition-opacity duration-200 ${
                     !activeBottomId ? 'opacity-25 grayscale' : 'opacity-100'
                   }`}
                 >
                   <button
                     type="button"
                     onClick={() => onSelectProduct(displayBottom)}
-                    className="w-full aspect-[3/4] max-w-[260px] bg-[#F4F4F4] overflow-hidden cursor-pointer"
+                    className="w-full aspect-[3/4] max-w-[260px] bg-[#F4F3EF] border border-[#D4D2CA] hover:border-[#111111] overflow-hidden cursor-pointer transition-colors"
                   >
                     <img
                       src={displayBottom.image}
                       alt={displayBottom.name}
+                      loading="lazy"
+                      decoding="async"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
                   </button>
                   <div className="mt-3 text-center">
-                    <div className="text-[11px] font-bold uppercase tracking-[-0.02em]">
+                    <div className="text-[11px] font-bold uppercase tracking-[-0.02em] text-[#111111]">
                       {displayBottom.name}
                     </div>
-                    <div className="font-mono-tabular text-[11px] text-[#444444]">
+                    <div className="font-mono-tabular text-[11px] text-[#6E6D68]">
                       {formatVND(displayBottom.priceVnd)}
                     </div>
                   </div>
@@ -279,27 +283,33 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
               </div>
             </div>
           ) : (
-            <Turntable3DCanvas
-              topProduct={activeTopId ? displayTop : undefined}
-              bottomProduct={activeBottomId ? displayBottom : undefined}
-              inclusionMode={inclusionMode}
-            />
+            <div className="flex-1 flex flex-col">
+              <div className="px-4 py-2.5 border-b border-[#D4D2CA] bg-[#F4F3EF] flex items-center justify-between gap-2 font-mono text-[10px] uppercase text-[#6E6D68]">
+                <span>INTERACTIVE GEOMETRIC SILHOUETTE TURNTABLE</span>
+                <span className="text-[#9E3E24]">.GLB GARMENT MESHES PENDING</span>
+              </div>
+              <Turntable3DCanvas
+                topProduct={activeTopId ? displayTop : undefined}
+                bottomProduct={activeBottomId ? displayBottom : undefined}
+                inclusionMode={inclusionMode}
+              />
+            </div>
           )}
         </div>
 
         {/* Right Panel: Preset Switcher + Kit Specification */}
-        <div className="lg:col-span-5 bg-white flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[#F4F3EF] flex flex-col justify-between">
           <div>
-            {/* Preset Switcher Row: SET 01 / 03 ← → */}
-            <div className="px-5 py-4 border-b border-black flex items-center justify-between gap-4 bg-[#F4F4F4]">
+            {/* Preset Switcher Row */}
+            <div className="px-5 py-4 border-b border-[#111111] flex items-center justify-between gap-4 bg-[#EAE8E1]">
               <div>
                 <div
                   data-testid="preset-set-code"
-                  className="font-mono-tabular text-xs font-bold uppercase text-black"
+                  className="font-mono-tabular text-xs font-bold uppercase text-[#9E3E24]"
                 >
                   {activePreset.code}
                 </div>
-                <div className="text-xs font-bold uppercase tracking-[-0.02em] mt-0.5">
+                <div className="text-xs font-black uppercase tracking-[-0.02em] text-[#111111] mt-0.5">
                   {activePreset.title}
                 </div>
               </div>
@@ -308,29 +318,28 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                   type="button"
                   aria-label="Previous preset set"
                   onClick={() => handleCyclePreset(-1)}
-                  className="w-9 h-9 border border-black bg-white hover:bg-black hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-10 h-10 border border-[#111111] bg-[#F4F3EF] hover:bg-[#0E0E0E] hover:text-[#F4F3EF] flex items-center justify-center cursor-pointer transition-colors"
                 >
-                  <ArrowLeft size={14} />
+                  <ArrowLeft size={14} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   aria-label="Next preset set"
                   onClick={() => handleCyclePreset(1)}
-                  className="w-9 h-9 border border-black bg-white hover:bg-black hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-10 h-10 border border-[#111111] bg-[#F4F3EF] hover:bg-[#0E0E0E] hover:text-[#F4F3EF] flex items-center justify-center cursor-pointer transition-colors"
                 >
-                  <ArrowRight size={14} />
+                  <ArrowRight size={14} aria-hidden="true" />
                 </button>
               </div>
             </div>
 
             {/* Kit Specification Panel */}
             <div className="p-5 space-y-5">
-              {/* Inclusion Mode Selector (Top only, Bottom only, Both) */}
               <div>
-                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-[#555555] mb-2">
+                <div className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#6E6D68] mb-2">
                   KIT CONFIGURATION // FREEFORM MIX
                 </div>
-                <div className="grid grid-cols-3 border border-black">
+                <div className="grid grid-cols-3 border border-[#111111]">
                   {(
                     [
                       { id: 'BOTH', label: 'BOTH' },
@@ -343,12 +352,12 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                       type="button"
                       onClick={() => handleInclusionModeClick(mode.id)}
                       aria-pressed={inclusionMode === mode.id}
-                      className={`py-2 px-2 font-mono text-[10px] font-bold uppercase cursor-pointer transition-colors ${
-                        idx > 0 ? 'border-l border-black' : ''
+                      className={`min-h-[40px] py-2 px-2 font-mono text-[10px] font-bold uppercase cursor-pointer transition-colors ${
+                        idx > 0 ? 'border-l border-[#111111]' : ''
                       } ${
                         inclusionMode === mode.id
-                          ? 'bg-black text-white'
-                          : 'bg-white text-black hover:bg-[#F4F4F4]'
+                          ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                          : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
                       }`}
                     >
                       {mode.label}
@@ -357,17 +366,17 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                 </div>
               </div>
 
-              {/* Top Garment Specification */}
+              {/* 01 // TOP LAYER */}
               <div
-                className={`border border-[#E0E0E0] p-3.5 transition-opacity ${
+                className={`border border-[#D4D2CA] bg-[#EAE8E1]/40 p-4 transition-opacity ${
                   !activeTopId ? 'opacity-45' : 'opacity-100'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-mono text-[10px] font-bold uppercase text-[#555555]">
+                  <span className="font-mono text-[10px] font-bold uppercase text-[#6E6D68]">
                     01 // TOP LAYER {!activeTopId ? '(UNBOUND)' : ''}
                   </span>
-                  <span className="font-mono-tabular text-xs font-bold text-black">
+                  <span className="font-mono-tabular text-xs font-bold text-[#111111]">
                     {activeTopId ? formatVND(displayTop.priceVnd) : '—'}
                   </span>
                 </div>
@@ -378,7 +387,7 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                   id="kit-top-select"
                   value={displayTop.id}
                   onChange={(e) => handleTopSelectChange(e.target.value)}
-                  className="w-full border border-black bg-[#F4F4F4] px-2.5 py-2 text-xs font-bold uppercase tracking-[-0.01em] text-black cursor-pointer"
+                  className="w-full min-h-[40px] border border-[#111111] bg-[#F4F3EF] px-2.5 py-2 text-xs font-bold uppercase tracking-[-0.01em] text-[#111111] cursor-pointer"
                 >
                   {topProducts.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -386,11 +395,11 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                     </option>
                   ))}
                 </select>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase text-[#555555]">
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase text-[#6E6D68]">
                     SIZE:
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {SIZES.map((sz) => (
                       <button
                         key={sz}
@@ -398,10 +407,10 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                         disabled={!activeTopId}
                         onClick={() => setTopSize(sz)}
                         aria-label={`Select top size ${sz}`}
-                        className={`font-mono text-[11px] font-bold w-8 h-7 border border-black cursor-pointer disabled:cursor-not-allowed ${
+                        className={`font-mono text-[11px] font-bold w-9 h-9 border border-[#111111] cursor-pointer disabled:cursor-not-allowed transition-colors ${
                           topSize === sz
-                            ? 'bg-black text-white'
-                            : 'bg-white text-black hover:bg-[#F4F4F4]'
+                            ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                            : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
                         }`}
                       >
                         {sz}
@@ -411,17 +420,17 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                 </div>
               </div>
 
-              {/* Bottom Garment Specification */}
+              {/* 02 // BOTTOM LAYER */}
               <div
-                className={`border border-[#E0E0E0] p-3.5 transition-opacity ${
+                className={`border border-[#D4D2CA] bg-[#EAE8E1]/40 p-4 transition-opacity ${
                   !activeBottomId ? 'opacity-45' : 'opacity-100'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="font-mono text-[10px] font-bold uppercase text-[#555555]">
+                  <span className="font-mono text-[10px] font-bold uppercase text-[#6E6D68]">
                     02 // BOTTOM LAYER {!activeBottomId ? '(UNBOUND)' : ''}
                   </span>
-                  <span className="font-mono-tabular text-xs font-bold text-black">
+                  <span className="font-mono-tabular text-xs font-bold text-[#111111]">
                     {activeBottomId ? formatVND(displayBottom.priceVnd) : '—'}
                   </span>
                 </div>
@@ -432,7 +441,7 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                   id="kit-bottom-select"
                   value={displayBottom.id}
                   onChange={(e) => handleBottomSelectChange(e.target.value)}
-                  className="w-full border border-black bg-[#F4F4F4] px-2.5 py-2 text-xs font-bold uppercase tracking-[-0.01em] text-black cursor-pointer"
+                  className="w-full min-h-[40px] border border-[#111111] bg-[#F4F3EF] px-2.5 py-2 text-xs font-bold uppercase tracking-[-0.01em] text-[#111111] cursor-pointer"
                 >
                   {bottomProducts.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -440,11 +449,11 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                     </option>
                   ))}
                 </select>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] uppercase text-[#555555]">
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] uppercase text-[#6E6D68]">
                     SIZE:
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {SIZES.map((sz) => (
                       <button
                         key={sz}
@@ -452,10 +461,10 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                         disabled={!activeBottomId}
                         onClick={() => setBottomSize(sz)}
                         aria-label={`Select bottom size ${sz}`}
-                        className={`font-mono text-[11px] font-bold w-8 h-7 border border-black cursor-pointer disabled:cursor-not-allowed ${
+                        className={`font-mono text-[11px] font-bold w-9 h-9 border border-[#111111] cursor-pointer disabled:cursor-not-allowed transition-colors ${
                           bottomSize === sz
-                            ? 'bg-black text-white'
-                            : 'bg-white text-black hover:bg-[#F4F4F4]'
+                            ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                            : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
                         }`}
                       >
                         {sz}
@@ -468,14 +477,14 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
           </div>
 
           {/* Live VND Total + Primary CTA */}
-          <div className="border-t border-black p-5 bg-white">
+          <div className="border-t border-[#111111] p-5 bg-[#F4F3EF]">
             <div className="flex items-baseline justify-between mb-4">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-[#555555]">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-[#6E6D68]">
                 SET TOTAL (VND)
               </span>
               <span
                 data-testid="set-live-total"
-                className="font-mono-tabular text-xl font-bold text-black"
+                className="font-mono-tabular text-2xl font-bold text-[#111111]"
               >
                 {formatVND(liveTotal)}
               </span>
@@ -495,7 +504,7 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
                   setCode: activePreset.code,
                 });
               }}
-              className="w-full bg-black text-white border border-black py-3.5 px-4 text-xs font-bold uppercase tracking-[0.08em] hover:bg-white hover:text-black transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full min-h-[48px] bg-[#0E0E0E] text-[#F4F3EF] border border-[#111111] py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-[0.1em] hover:bg-[#9E3E24] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {ctaLabel}
             </button>
@@ -503,7 +512,7 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
         </div>
       </div>
 
-      {/* CUSTOMIZE LOOK // SELECT TOP, BOTTOM, OR BOTH */}
+      {/* SECTION 06 — CUSTOMIZE LOOK // FREEFORM STUDIO */}
       <CustomizeLookCanvas
         activeTopId={activeTopId}
         activeBottomId={activeBottomId}
