@@ -1,5 +1,6 @@
 package com.lagiism.email.controller;
 
+import com.lagiism.email.dto.SendTestEmailRequest;
 import com.lagiism.email.dto.SmtpConfigDto;
 import com.lagiism.email.dto.UpdateSmtpConfigRequest;
 import com.lagiism.email.service.EmailService;
@@ -26,5 +27,11 @@ public class AdminSmtpController {
                                                        Authentication authentication) {
         return ApiResponse.ok("SMTP configuration updated",
                 emailService.saveConfig(request, authentication.getName()));
+    }
+
+    @PostMapping("/test")
+    public ApiResponse<Void> sendTestEmail(@Valid @RequestBody SendTestEmailRequest request) {
+        emailService.sendTestEmail(request.toEmail());
+        return ApiResponse.ok("Test email dispatched to " + request.toEmail(), null);
     }
 }

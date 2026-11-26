@@ -55,6 +55,24 @@ public class EmailService {
         return smtpConfigMapper.toDto(saved);
     }
 
+    public void sendTestEmail(String toEmail) {
+        SmtpConfig config = smtpConfigRepository.findTopByOrderByIdAsc()
+                .orElseThrow(() -> new BadRequestException("SMTP configuration has not been saved yet"));
+        JavaMailSenderImpl mailSender = buildMailSender(config);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom(config.getFromEmail(), config.getFromName());
+            helper.setTo(toEmail.trim());
+            helper.setSubject("LAGIISM // SMTP Connection Test");
+            helper.setText("<p>LAGIISM dynamic SMTP configuration is working properly.</p>", true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("SMTP test email failed for {}", toEmail, e);
+            throw new BadRequestException("SMTP test failed: " + e.getMessage());
+        }
+    }
+
     public void sendPasswordResetOtp(String toEmail, String otpCode, int expiryMinutes) {
         Optional<SmtpConfig> configOpt = smtpConfigRepository.findTopByOrderByIdAsc();
         if (configOpt.isEmpty() || !configOpt.get().isEnabled()) {
