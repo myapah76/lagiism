@@ -1,4 +1,4 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.config;
 
 import com.lagiism.account.entity.User;
 import com.lagiism.account.repository.UserRepository;
@@ -22,7 +22,6 @@ public class AdminUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
-        // Google-only accounts have null passwordHash; provide unusable sentinel so DaoAuthenticationProvider rejects password login cleanly
         String password = user.getPasswordHash() != null ? user.getPasswordHash() : "{noop}";
 
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()

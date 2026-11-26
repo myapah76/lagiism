@@ -1,4 +1,4 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.config;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,11 +12,6 @@ import org.springframework.security.web.csrf.DefaultCsrfToken;
 
 import java.util.UUID;
 
-/**
- * Hybrid CSRF Token Repository persisting tokens in both the XSRF-TOKEN cookie
- * and HttpSession, while always exposing X-XSRF-TOKEN in response headers so
- * cross-site SPAs never break when browsers block third-party cookies.
- */
 public class HybridCsrfTokenRepository implements CsrfTokenRepository {
 
     public static final String HEADER_NAME = "X-XSRF-TOKEN";

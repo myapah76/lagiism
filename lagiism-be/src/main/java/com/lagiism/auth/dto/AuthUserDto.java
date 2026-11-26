@@ -9,5 +9,8 @@ public record AuthUserDto(
         String role,
         List<String> roles,
         String authProvider,
-        String avatarUrl
+        String avatarUrl,
+        String phone,
+        String defaultAddress,
+        String defaultCity
 ) {}

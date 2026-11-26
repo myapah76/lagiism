@@ -1,4 +1,4 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.blacklist;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;

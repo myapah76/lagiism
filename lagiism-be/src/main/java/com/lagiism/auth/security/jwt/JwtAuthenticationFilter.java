@@ -1,5 +1,6 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.jwt;
 
+import com.lagiism.auth.security.blacklist.TokenBlacklistService;
 import com.lagiism.shared.ApiResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

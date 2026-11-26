@@ -1,4 +1,4 @@
-package com.lagiism.auth.service;
+package com.lagiism.auth.security.oauth;
 
 import com.lagiism.shared.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;

@@ -16,7 +16,10 @@ public class AuthMapper {
                 user.getPrimaryRole(),
                 user.getRoleNames(),
                 user.getAuthProvider(),
-                user.getAvatarUrl()
+                user.getAvatarUrl(),
+                user.getPhone(),
+                user.getDefaultAddress(),
+                user.getDefaultCity()
         );
     }
 

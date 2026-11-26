@@ -6,12 +6,12 @@ import com.lagiism.account.entity.User;
 import com.lagiism.account.repository.RoleRepository;
 import com.lagiism.account.repository.UserRepository;
 import com.lagiism.account.service.AuditLogService;
+import com.lagiism.auth.security.blacklist.TokenBlacklistService;
 import com.lagiism.auth.dto.*;
-import com.lagiism.auth.entity.PasswordResetOtp;
+import com.lagiism.auth.security.jwt.JwtService;
 import com.lagiism.auth.mapper.AuthMapper;
-import com.lagiism.auth.repository.PasswordResetOtpRepository;
-import com.lagiism.auth.security.JwtService;
-import com.lagiism.auth.security.TokenBlacklistService;
+import com.lagiism.auth.security.oauth.GoogleTokenVerifierService;
+import com.lagiism.auth.security.otp.OtpStore;
 import com.lagiism.email.service.EmailService;
 import com.lagiism.shared.BadRequestException;
 import com.lagiism.shared.ResourceNotFoundException;
@@ -31,9 +31,12 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HexFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,17 +44,17 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final int OTP_EXPIRY_MINUTES = 10;
+    private static final int OTP_EXPIRY_MINUTES = 5;
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordResetOtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final AuditLogService auditLogService;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final OtpStore otpStore;
     private final GoogleTokenVerifierService googleTokenVerifierService;
     private final AuthMapper authMapper;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -220,41 +223,41 @@ public class AuthService {
                 return;
             }
             String otp = String.format("%06d", secureRandom.nextInt(1_000_000));
-            PasswordResetOtp entity = PasswordResetOtp.builder()
-                    .email(user.getEmail())
-                    .otpHash(passwordEncoder.encode(otp))
-                    .expiresAt(Instant.now().plus(Duration.ofMinutes(OTP_EXPIRY_MINUTES)))
-                    .used(false)
-                    .build();
-            otpRepository.save(entity);
+            otpStore.saveOtp(user.getEmail(), sha256Hex(otp), Duration.ofMinutes(OTP_EXPIRY_MINUTES));
             emailService.sendPasswordResetOtp(user.getEmail(), otp, OTP_EXPIRY_MINUTES);
             auditLogService.record(user.getEmail(), "OTP_REQUESTED", "AUTH", String.valueOf(user.getId()),
-                    "Password reset OTP requested");
+                    "Password reset OTP stored in Redis (5m TTL)");
         });
     }
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        PasswordResetOtp otpEntity = otpRepository
-                .findTopByEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc(request.email().trim())
-                .orElseThrow(() -> new BadRequestException("Invalid or expired OTP"));
+        String email = request.email().trim().toLowerCase();
+        OtpStore.VerifyResult result = otpStore.verifyAndConsume(email, sha256Hex(request.otp().trim()));
 
-        if (otpEntity.getExpiresAt().isBefore(Instant.now())) {
-            throw new BadRequestException("OTP has expired");
+        if (result == OtpStore.VerifyResult.TOO_MANY_ATTEMPTS) {
+            throw new BadRequestException("Too many invalid OTP attempts. Please request a new code.");
         }
-        if (!passwordEncoder.matches(request.otp(), otpEntity.getOtpHash())) {
-            throw new BadRequestException("Invalid OTP code");
+        if (result != OtpStore.VerifyResult.VALID) {
+            throw new BadRequestException("Invalid or expired OTP code");
         }
 
-        User user = userRepository.findByEmailIgnoreCase(request.email().trim())
+        User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        otpEntity.setUsed(true);
-        otpRepository.save(otpEntity);
         auditLogService.record(user.getEmail(), "PASSWORD_RESET", "AUTH", String.valueOf(user.getId()),
-                "Password reset via OTP");
+                "Password reset via Redis OTP");
+    }
+
+    public static String sha256Hex(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
     }
 
     private Role getRole(RoleName name) {

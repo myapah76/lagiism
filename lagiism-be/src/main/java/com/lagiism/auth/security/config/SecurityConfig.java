@@ -1,5 +1,6 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.config;
 
+import com.lagiism.auth.security.jwt.JwtAuthenticationFilter;
 import com.lagiism.shared.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,9 +94,12 @@ public class SecurityConfig {
                                 return true;
                             }
                             String path = request.getRequestURI();
-                            return path.equals("/api/auth/register")
+                            return path.equals("/api/public/orders")
+                                    || path.equals("/api/auth/register")
                                     || path.equals("/api/auth/google")
-                                    || path.equals("/api/auth/refresh");
+                                    || path.equals("/api/auth/refresh")
+                                    || path.equals("/api/auth/forgot-password")
+                                    || path.equals("/api/auth/reset-password");
                         })
                 )
                 .sessionManagement(session -> session

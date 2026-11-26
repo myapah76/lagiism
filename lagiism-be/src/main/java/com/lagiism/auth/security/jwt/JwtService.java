@@ -1,4 +1,4 @@
-package com.lagiism.auth.security;
+package com.lagiism.auth.security.jwt;
 
 import com.lagiism.account.entity.User;
 import io.jsonwebtoken.Claims;
