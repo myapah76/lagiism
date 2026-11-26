@@ -63,7 +63,7 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
       </div>
 
       {/* Sticky Filter Bar — stays pinned beneath fixed header while scrolling */}
-      <div className="sticky top-13 z-30 bg-white/95 backdrop-blur-sm border-y border-black">
+      <div className="sticky top-14 z-30 bg-[#F4F3EF]/95 backdrop-blur-sm border-y border-[#111111]">
         <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Category Filter Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
@@ -73,10 +73,10 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
                 type="button"
                 onClick={() => onCategoryChange(cat.id)}
                 aria-pressed={selectedCategory === cat.id}
-                className={`font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-black cursor-pointer transition-colors whitespace-nowrap ${
+                className={`min-h-[40px] font-mono text-[11px] font-bold uppercase px-3.5 py-2 border border-[#111111] cursor-pointer transition-colors whitespace-nowrap ${
                   selectedCategory === cat.id
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black hover:bg-[#F4F4F4]'
+                    ? 'bg-[#0E0E0E] text-[#F4F3EF]'
+                    : 'bg-[#F4F3EF] text-[#111111] hover:bg-[#EAE8E1]'
                 }`}
               >
                 {cat.label}
@@ -92,7 +92,7 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
               onChange={(e) => onSearchChange(e.target.value)}
               aria-label="Filter archive by keyword"
               placeholder="FILTER ARCHIVE..."
-              className="border border-black bg-[#F4F4F4] px-3 py-2 font-mono text-xs uppercase text-black placeholder:text-[#767676] w-44 sm:w-52"
+              className="min-h-[40px] border border-[#111111] bg-[#EAE8E1] px-3 py-2 font-mono text-xs uppercase text-[#111111] placeholder:text-[#6E6D68] w-44 sm:w-52"
             />
             <label htmlFor="archive-sort" className="sr-only">
               Sort products
@@ -105,7 +105,7 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
                   e.target.value as 'FEATURED' | 'PRICE_ASC' | 'PRICE_DESC'
                 )
               }
-              className="border border-black bg-white px-3 py-2 font-mono text-xs font-bold uppercase text-black cursor-pointer"
+              className="min-h-[40px] border border-[#111111] bg-[#F4F3EF] px-3 py-2 font-mono text-xs font-bold uppercase text-[#111111] cursor-pointer"
             >
               <option value="FEATURED">SORT: FEATURED</option>
               <option value="PRICE_ASC">PRICE: LOW → HIGH</option>
@@ -118,7 +118,7 @@ export const ShopAllView: React.FC<ShopAllViewProps> = ({
                   onCategoryChange('ALL');
                   onSearchChange('');
                 }}
-                className="font-mono text-[11px] uppercase px-3 py-2 border border-[#E0E0E0] text-[#555555] hover:border-black hover:text-black cursor-pointer"
+                className="min-h-[40px] font-mono text-[11px] uppercase px-3 py-2 border border-[#D4D2CA] text-[#6E6D68] hover:border-[#111111] hover:text-[#111111] cursor-pointer"
               >
                 RESET ×
               </button>

@@ -3,28 +3,51 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-lg-canvas: #F4F3EF;
+  --color-lg-surface: #EAE8E1;
+  --color-lg-void: #0E0E0E;
+  --color-lg-ink: #111111;
+  --color-lg-muted: #6E6D68;
+  --color-lg-border: #D4D2CA;
+  --color-lg-indigo: #1D2B44;
+  --color-lg-rust: #9E3E24;
+}
+
+:root {
+  --lg-canvas: #F4F3EF;
+  --lg-surface: #EAE8E1;
+  --lg-void: #0E0E0E;
+  --lg-ink: #111111;
+  --lg-muted: #6E6D68;
+  --lg-border: #D4D2CA;
+  --lg-indigo: #1D2B44;
+  --lg-rust: #9E3E24;
 }
 
 @layer base {
   *,
   *::before,
   *::after {
-    border-radius: 0px !important;
-    box-shadow: none !important;
+    border-radius: 0px;
   }
 
   html {
-    scroll-behavior: smooth;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: var(--lg-canvas);
+    color: var(--lg-ink);
     font-family: var(--font-sans);
   }
 
   body {
     margin: 0;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: var(--lg-canvas);
+    color: var(--lg-ink);
     overflow-x: hidden;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--lg-rust);
+    outline-offset: 2px;
   }
 }
 
