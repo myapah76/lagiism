@@ -1,6 +1,6 @@
 package com.lagiism;
 
-import com.lagiism.auth.security.RedisTokenBlacklistService;
+import com.lagiism.auth.security.blacklist.RedisTokenBlacklistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;

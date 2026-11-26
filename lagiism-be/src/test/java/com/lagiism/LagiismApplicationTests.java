@@ -1,6 +1,8 @@
 package com.lagiism;
 
-import com.lagiism.auth.service.GoogleTokenVerifierService;
+import com.lagiism.auth.oauth.GoogleTokenVerifierService;
+import com.lagiism.auth.otp.OtpStore;
+import com.lagiism.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -31,6 +34,9 @@ class LagiismApplicationTests {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private OtpStore otpStore;
 
     @MockitoBean
     private GoogleTokenVerifierService googleTokenVerifierService;
@@ -114,6 +120,64 @@ class LagiismApplicationTests {
                 .andExpect(jsonPath("$.data.healthy").value(true))
                 .andExpect(jsonPath("$.data.tableCounts.roles").value(3))
                 .andExpect(jsonPath("$.data.tableCounts.products").value(8));
+
+        // Guest website order (no login required)
+        mockMvc.perform(post("/api/public/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "recipientName": "Guest Buyer",
+                                  "recipientPhone": "0909888777",
+                                  "shippingAddress": "La Gi Harbor",
+                                  "paymentMethod": "COD",
+                                  "items": [
+                                    {
+                                      "productSlug": "lg-tee-01",
+                                      "productName": "LAGIISM BOXY WASHED TEE",
+                                      "size": "M",
+                                      "unitPriceVnd": 450000,
+                                      "quantity": 1
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderSource").value("WEBSITE"))
+                .andExpect(jsonPath("$.data.userId").doesNotExist());
+
+        // Admin creates an Instagram non-user order
+        mockMvc.perform(post("/api/admin/orders")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "orderSource": "INSTAGRAM",
+                                  "paymentMethod": "BANK",
+                                  "recipientName": "IG Customer",
+                                  "recipientPhone": "0912345678",
+                                  "shippingAddress": "District 3, TP.HCM",
+                                  "note": "@ig_buyer",
+                                  "items": [
+                                    {
+                                      "productSlug": "lg-denim-01",
+                                      "productName": "RAW WIDE-LEG SELVEDGE DENIM",
+                                      "size": "L",
+                                      "unitPriceVnd": 850000,
+                                      "quantity": 1
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.orderSource").value("INSTAGRAM"))
+                .andExpect(jsonPath("$.data.paymentMethod").value("BANK"))
+                .andExpect(jsonPath("$.data.totalVnd").value(850000));
+
+        // Admin can list all orders
+        mockMvc.perform(get("/api/admin/orders")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
     }
 
     @Test
@@ -142,6 +206,54 @@ class LagiismApplicationTests {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.role").value("USER"));
+
+        // USER can update default profile (phone & shipping address)
+        mockMvc.perform(put("/api/user/profile")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "fullName": "Lagi Customer Updated",
+                                  "phone": "0901234567",
+                                  "defaultAddress": "123 Le Loi, District 1",
+                                  "defaultCity": "TP.HCM"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.phone").value("0901234567"))
+                .andExpect(jsonPath("$.data.defaultCity").value("TP.HCM"));
+
+        // USER can place an order and read order history
+        mockMvc.perform(post("/api/user/orders")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "recipientName": "Lagi Customer Updated",
+                                  "recipientPhone": "0901234567",
+                                  "shippingAddress": "123 Le Loi, District 1",
+                                  "shippingCity": "TP.HCM",
+                                  "items": [
+                                    {
+                                      "productSlug": "lg-tee-01",
+                                      "productName": "LAGIISM BOXY WASHED TEE",
+                                      "size": "L",
+                                      "colorName": "WASHED CHARCOAL",
+                                      "unitPriceVnd": 450000,
+                                      "quantity": 2
+                                    }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalVnd").value(900000))
+                .andExpect(jsonPath("$.data.items.length()").value(1));
+
+        mockMvc.perform(get("/api/user/orders")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].recipientPhone").value("0901234567"));
 
         // USER is forbidden on /api/admin/**
         mockMvc.perform(get("/api/admin/accounts")
@@ -186,5 +298,73 @@ class LagiismApplicationTests {
                 .andExpect(jsonPath("$.data.user.email").value("google.user@lagiism.com"))
                 .andExpect(jsonPath("$.data.user.role").value("USER"))
                 .andExpect(jsonPath("$.data.user.authProvider").value("GOOGLE"));
+    }
+
+    @Test
+    void forgotResetOtpAndChangePasswordFlowWorks() throws Exception {
+        // Register a fresh member
+        MvcResult reg = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "khoi@lagiism.vn",
+                                  "fullName": "Tran Minh Khoi",
+                                  "password": "InitialPassword1!"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String initialToken = objectMapper.readTree(reg.getResponse().getContentAsString())
+                .path("data").path("accessToken").asText();
+
+        // Change password after login (revokes current JWT)
+        mockMvc.perform(post("/api/auth/change-password")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + initialToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "currentPassword": "InitialPassword1!",
+                                  "newPassword": "ChangedPassword2!"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        // Revoked token is rejected with 401
+        mockMvc.perform(get("/api/auth/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + initialToken))
+                .andExpect(status().isUnauthorized());
+
+        // Forgot password + atomic 5-min OTP reset
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"khoi@lagiism.vn\"}"))
+                .andExpect(status().isOk());
+
+        // Seed known 6-digit OTP into OtpStore (5m TTL) and verify atomic consume on reset
+        otpStore.saveOtp("khoi@lagiism.vn", AuthService.sha256Hex("654321"), java.time.Duration.ofMinutes(5));
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "khoi@lagiism.vn",
+                                  "otp": "654321",
+                                  "newPassword": "RecoveredPassword3!"
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        // Reusing the consumed OTP fails
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "khoi@lagiism.vn",
+                                  "otp": "654321",
+                                  "newPassword": "AnotherPassword4!"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
     }
 }
