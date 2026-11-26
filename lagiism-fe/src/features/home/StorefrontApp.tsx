@@ -1,8 +1,5 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
 import { AboutView } from '../../components/AboutView';
 import { AccountModal } from '../../components/AccountModal';
 import { AuthModal } from '../../components/AuthModal';
@@ -16,12 +13,7 @@ import { HomeHero } from './components/HomeHero';
 import { HomeDropCollection } from './components/HomeDropCollection';
 import { HomeEditorialFilm } from './components/HomeEditorialFilm';
 import { HomeCategoryArchive } from './components/HomeCategoryArchive';
-
-const RunwaySection = lazy(() =>
-  import('../runway/RunwaySection').then((m) => ({ default: m.RunwaySection }))
-);
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+import { useHomeScrollAnimations } from './hooks/useHomeScrollAnimations';
 import { BRAND_INFO, CATEGORY_STRIP, PRODUCTS } from '../../data/catalog';
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { catalogService } from '../../services/catalog.service';
@@ -180,7 +172,6 @@ export function StorefrontApp() {
     if (location.pathname.startsWith('/shop')) return 'SHOP_ALL';
     if (location.pathname.startsWith('/product/')) return 'PRODUCT_DETAIL';
     if (location.pathname === '/about') return 'ABOUT';
-    if (location.pathname === '/runway') return 'RUNWAY';
     return 'HOME';
   }, [location.pathname]);
 
@@ -264,12 +255,6 @@ export function StorefrontApp() {
       return;
     }
 
-    if (view === 'RUNWAY') {
-      navigate('/runway');
-      window.scrollTo({ top: 0 });
-      return;
-    }
-
     if (view === 'PRODUCT_DETAIL') {
       navigate(`/product/${selectedProduct.id}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -333,66 +318,13 @@ export function StorefrontApp() {
 
   const homeRootRef = useRef<HTMLDivElement | null>(null);
 
-  useGSAP(
-    () => {
-      if (activeView !== 'HOME') return;
-      const prefersReduced =
-        typeof window !== 'undefined' &&
-        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
-
-      // Restrained editorial hero entrance (line-by-line + subtle image sharpen/settle)
-      const introTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      introTl
-        .fromTo('[data-hero-media]', { scale: 1.07, autoAlpha: 0.7 }, { scale: 1.0, autoAlpha: 1, duration: 1.05 }, 0)
-        .fromTo('[data-hero-line]', { yPercent: 105, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.72, stagger: 0.09 }, 0.14)
-        .fromTo('[data-hero-meta]', { y: 12, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, stagger: 0.08 }, 0.28);
-
-      // Restrained scroll-linked parallax on Hero & Editorial Film imagery (zero pinning!)
-      gsap.to('[data-hero-media]', {
-        yPercent: 7,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '[data-home-hero]',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
-
-      gsap.fromTo(
-        '[data-film-media]',
-        { yPercent: -4 },
-        {
-          yPercent: 4,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '[data-home-section="editorial-film"]',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        }
-      );
-
-      // Editorial ScrollTrigger.batch reveal for product & category cards
-      gsap.set('[data-reveal-card]', { y: 20, autoAlpha: 0 });
-      ScrollTrigger.batch('[data-reveal-card]', {
-        start: 'top 88%',
-        once: true,
-        onEnter: (batch) =>
-          gsap.to(batch, {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.55,
-            stagger: 0.06,
-            ease: 'power2.out',
-            overwrite: true,
-          }),
-      });
-    },
-    { scope: homeRootRef, dependencies: [activeView], revertOnUpdate: true }
-  );
+  useHomeScrollAnimations({
+    rootRef: homeRootRef,
+    activeView,
+    dropCategory,
+    visibleProductCount: visibleDropProducts.length,
+    totalProductCount: products.length,
+  });
 
   return (
     <div ref={homeRootRef} className="min-h-screen flex flex-col bg-[#F4F3EF] text-[#111111]">
@@ -478,23 +410,6 @@ export function StorefrontApp() {
         )}
 
         {activeView === 'ABOUT' && <AboutView onNavigate={handleNavigate} />}
-
-        {activeView === 'RUNWAY' && (
-          <Suspense
-            fallback={
-              <div className="min-h-screen bg-[#F4F3EF] flex items-center justify-center font-mono text-xs uppercase tracking-[0.14em] text-[#6E6D68]">
-                LOADING RUNWAY...
-              </div>
-            }
-          >
-            <RunwaySection
-              onOpenProduct={(pid) => {
-                navigate(`/product/${pid}`);
-                window.scrollTo({ top: 0 });
-              }}
-            />
-          </Suspense>
-        )}
       </main>
 
       <Footer onNavigate={handleNavigate} />

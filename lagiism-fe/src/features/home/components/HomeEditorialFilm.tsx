@@ -23,7 +23,7 @@ export const HomeEditorialFilm: React.FC<HomeEditorialFilmProps> = ({ onNavigate
               alt="Illustrated La Gi coastal concrete skatepark editorial preview"
               loading="lazy"
               decoding="async"
-              className="w-full aspect-[16/10] object-cover scale-[1.06]"
+              className="w-full aspect-[16/10] object-cover scale-[1.12]"
             />
           </div>
           <div className="absolute bottom-3 left-3 bg-[#0E0E0E]/85 backdrop-blur-sm text-[#F4F3EF] border border-[#F4F3EF]/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.1em]">

@@ -157,7 +157,10 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
       className="max-w-[1440px] mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-[#111111] scroll-mt-14 bg-[#F4F3EF]"
     >
       {/* Section Header with Honest [ 2D STUDIO ] / [ 3D SILHOUETTE ] Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#111111]">
+      <div
+        data-set-reveal
+        className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-[#111111]"
+      >
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#9E3E24] font-bold">
             MODULAR KIT BUILDER // DROP 01
@@ -200,7 +203,10 @@ export const ShopTheSet: React.FC<ShopTheSetProps> = ({
       </div>
 
       {/* Main Split Builder Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 border-x border-b border-[#111111]">
+      <div
+        data-set-reveal
+        className="grid grid-cols-1 lg:grid-cols-12 border-x border-b border-[#111111]"
+      >
         {/* Left Viewport: 2D Studio or 3D Silhouette Turntable */}
         <div className="lg:col-span-7 bg-[#EAE8E1] border-b lg:border-b-0 lg:border-r border-[#111111] flex flex-col">
           {viewMode === '2D_STUDIO' ? (

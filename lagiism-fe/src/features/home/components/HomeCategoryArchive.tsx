@@ -61,7 +61,7 @@ export const HomeCategoryArchive: React.FC<HomeCategoryArchiveProps> = ({
           <button
             key={cat.id}
             type="button"
-            data-reveal-card
+            data-category-card
             onClick={() => onSelectCategory(cat.id)}
             className={`${layoutSpan[idx % 4]} group border border-[#D4D2CA] hover:border-[#111111] bg-[#EAE8E1] text-left cursor-pointer transition-colors flex flex-col overflow-hidden`}
           >

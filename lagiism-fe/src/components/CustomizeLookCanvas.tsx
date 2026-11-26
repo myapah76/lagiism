@@ -45,7 +45,10 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
       className="mt-14 pt-10 border-t border-[#111111]"
     >
       {/* Section Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5">
+      <div
+        data-studio-reveal
+        className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-5"
+      >
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden="true"
@@ -71,6 +74,7 @@ export const CustomizeLookCanvas: React.FC<CustomizeLookCanvasProps> = ({
 
       {/* Editorial Drafting-Grid Interactive Studio Canvas */}
       <div
+        data-studio-reveal
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         data-testid="customize-look-grid"
