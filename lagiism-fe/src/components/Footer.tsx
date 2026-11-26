@@ -10,7 +10,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="border-t-2 border-[#111111] bg-[#0E0E0E] text-[#F4F3EF]">
       {/* Oversized Editorial Wordmark Band */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 pt-14 md:pt-20 pb-10 border-b border-[#6E6D68]/30">
+      <div
+        data-footer-reveal
+        className="max-w-[1440px] mx-auto px-4 md:px-8 pt-14 md:pt-20 pb-10 border-b border-[#6E6D68]/30"
+      >
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="text-5xl sm:text-7xl md:text-[96px] font-black uppercase tracking-[-0.05em] leading-[0.84] text-[#F4F3EF]">
             {BRAND_INFO.name}
@@ -27,7 +30,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       </div>
 
       {/* Archive Index & Atelier Contact */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-10 md:py-12 grid grid-cols-1 md:grid-cols-12 gap-8 border-b border-[#6E6D68]/30">
+      <div
+        data-footer-reveal
+        className="max-w-[1440px] mx-auto px-4 md:px-8 py-10 md:py-12 grid grid-cols-1 md:grid-cols-12 gap-8 border-b border-[#6E6D68]/30"
+      >
         <div className="md:col-span-7">
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6E6D68] mb-4">
             ARCHIVE INDEX
@@ -63,13 +69,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               className="min-h-[40px] text-left font-mono text-xs font-bold uppercase text-[#F4F3EF] hover:text-[#9E3E24] transition-colors cursor-pointer"
             >
               04 // ABOUT STORY
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('RUNWAY')}
-              className="min-h-[40px] text-left font-mono text-xs font-bold uppercase text-[#F4F3EF] hover:text-[#9E3E24] transition-colors cursor-pointer"
-            >
-              05 // RUNWAY
             </button>
           </nav>
         </div>
